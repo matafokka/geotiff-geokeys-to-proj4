@@ -1,0 +1,31 @@
+{
+  "plugins": [
+	"plugins/markdown"
+  ],
+  "templates": {
+	"systemName": "geotiff-geokeys-to-proj4",
+	"theme": "cerulean",
+	"linenums": true,
+	"navType": "inline",
+	"footer": "<div style='width: 100%; text-align: center;'><a href='https://github.com/matafokka'>(c) matafokka</a></div>",
+	"monospaceLinks": true,
+	"default": {
+	  "useLongnameInNav": true
+	}
+  },
+  "source": {
+	"exclude": [
+	  "./test.js",
+	  "./main-dist.js",
+	  "./node_modules/",
+	  "./EPSG/",
+	  "./dbConnectionParams.js"
+	]
+  },
+  "opts": {
+	"recurse": true,
+	"destination": "./docs/",
+	"template": "./node_modules/ink-docstrap/template",
+	"readme": "./README.md"
+  }
+}
