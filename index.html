@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width">
+	<title>geotiff-geokeys-to-proj4 Index</title>
+
+	<!--[if lt IE 9]>
+	<script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+	<![endif]-->
+	<link type="text/css" rel="stylesheet" href="styles/sunlight.default.css">
+
+	<link type="text/css" rel="stylesheet" href="styles/site.cerulean.css">
+
+</head>
+
+<body>
+
+<div class="navbar navbar-default navbar-fixed-top ">
+<div class="container">
+	<div class="navbar-header">
+		<a class="navbar-brand" href="index.html">geotiff-geokeys-to-proj4</a>
+		<button class="navbar-toggle" type="button" data-toggle="collapse" data-target="#topNavigation">
+			<span class="icon-bar"></span>
+			<span class="icon-bar"></span>
+			<span class="icon-bar"></span>
+        </button>
+	</div>
+	<div class="navbar-collapse collapse" id="topNavigation">
+		<ul class="nav navbar-nav">
+			
+			<li class="dropdown">
+				<a href="modules.list.html" class="dropdown-toggle" data-toggle="dropdown">Modules<b class="caret"></b></a>
+				<ul class="dropdown-menu inline">
+					<li><a href="module-geokeysToProj4.html">geokeysToProj4</a></li>
+				</ul>
+			</li>
+			
+		</ul>
+        
+            <div class="col-sm-3 col-md-3">
+                <form class="navbar-form" role="search">
+                    <div class="input-group">
+                        <input type="text" class="form-control" placeholder="Search" name="q" id="search-input">
+                        <div class="input-group-btn">
+                            <button class="btn btn-default" id="search-submit"><i class="glyphicon glyphicon-search"></i></button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        
+	</div>
+
+</div>
+</div>
+
+
+<div class="container" id="toc-content">
+<div class="row">
+
+	
+	<div class="col-md-8">
+	
+		<div id="main">
+			
+
+	
+	
+
+
+
+
+
+
+
+
+
+
+
+	
+	
+
+
+
+
+
+    <section class="readme-section">
+        <article><h1>geotiff-geokeys-to-proj4 beta</h1>
+<p>This library converts geokeys embedded in GeoTIFF file to Proj4 string, so you can georeference your images. Intended to be used with <a href="https://github.com/geotiffjs/geotiff.js/">geotiff.js</a> and <a href="https://github.com/proj4js/proj4js">proj4js</a>, it's basically a glue between these libraries, but it can be used with alternatives.</p>
+<p>Designed for both frontend and backend. Supports ES3+ environments <em>(any browser from 2000 year)</em>. Size is ~1 Mb <em>(despite what npm says, it counts both sources and bundle)</em>.</p>
+<p>Grab it from npm: <code>npm install geotiff-geokeys-to-proj4</code>.</p>
+<h3>Looking for maintainers!</h3>
+<p>This library needs monthly database updates. Please, see <a href="#manually-updating-from-epsg-database">this section</a> on how to do it. If you want to help, please, create an issue to let me know that we've got a maintainer, and submit pull requests with the updated files.</p>
+<h1><a href="https://matafokka.github.io/geotiff-geokeys-to-proj4/module-geokeysToProj4.html">Docs</a></h1>
+<h1>Usage</h1>
+<h2>Importing this library</h2>
+<p>In <strong>Node.js</strong> or with <strong>bundler</strong>: <code>const geokeysToProj4 = require(&quot;geotiff-geokeys-to-proj4&quot;);</code></p>
+<p>In a <strong>browser</strong>: <code>&lt;script src=&quot;path/to/main-dist.js&quot;&gt;&lt;/script&gt;</code> - after that you'll have <code>geokeysToProj4</code> global variable.</p>
+<p>If you're using <strong>global transforms</strong>, consider importing sources: <code>const geokeysToProj4 = require(&quot;geotiff-geokeys-to-proj4/main&quot;);</code> or <code>&lt;script src=&quot;path/to/main.js&quot;&gt;&lt;/script&gt;</code></p>
+<h2>General usage</h2>
+<p>In general, you want to:</p>
+<ol>
+<li>Read geokeys.</li>
+<li>Pass them to <code>geokeysToProj4.toProj4()</code> (let's call returned object <code>projObj</code>).</li>
+<li>Pass <code>projObj.proj4</code> (which is Proj4 string) to proj4js.</li>
+<li>Convert pixel coordinates to CRS coordinates (let's call them <code>crsX</code> and <code>crsY</code>).</li>
+<li>Convert CRS coordinates to usable units <em>(in most cases, meters, but GeoTIFF allows speed, angular speed, and scale)</em>: <code>geokeysToProj4(crsX, crsY, projObj.coordinatesConversionParameters)</code>.</li>
+<li>The returned object will contain x and y coordinates which are ready to be projected with proj4js. So project them.</li>
+</ol>
+<p>Of course, you can alter this workflow to use this library with any other (presumably, server-side) software.</p>
+<p>Let's demonstrate everything from start to finish on an example with <a href="https://github.com/geotiffjs/geotiff.js/">geotiff.js</a> and <a href="https://github.com/proj4js/proj4js">proj4js</a>:</p>
+<pre class="prettyprint source lang-js"><code>// Import all the stuff
+const geotiff = require(&quot;geotiff&quot;); // geotiff.js
+const proj4 = require(&quot;proj4&quot;); // proj4js
+const geokeysToProj4 = require(&quot;geotiff-geokeys-to-proj4&quot;); // This library
+
+// Let's wrap our example in a function
+async function workWithGeoTIFF(blob) {
+	// Read image. See geotiff.js docs on what all of that means.
+	let tiff = await geotiff.fromBlob(blob); // Read blob
+	let imageCount = await tiff.getImageCount(); // Get image count
+
+	// Work with each image in GeoTIFF
+	for (let i = 0; i &lt; imageCount; i++) {
+		let image = await tiff.getImage(i); // Get image instance
+		let geoKeys = image.getGeoKeys(); // Get geokeys
+		let projObj = geokeysToProj4.toProj4(geoKeys); // Convert geokeys to proj4 string
+		// The function above returns an object where proj4 property is a Proj4 string and coordinatesConversionParameters is conversion parameters which we'll use later
+		let projection = proj4(projObj.proj4, &quot;WGS84&quot;); // Project our GeoTIFF to WGS84
+
+		// Now you may want to deal with errors. Unfortunately, errors are unavoidable, but in most cases, you can warn the user or just continue on.
+		// All occurred errors will be in projObj.errors object. See the docs for more information.
+
+		// Work with pixels
+		// For looping over pixels
+		let maxX = image.getWidth(), maxY = image.getHeight();
+		// Pixel dimensions for converting image coordinates to CRS coordinates
+		let origin = image.getOrigin(), resolution = image.getResolution(), xSize = resolution[0],
+			ySize = resolution[1];
+
+		for (let y = 0; y &lt; maxY; y++) {
+			// Read one row of pixels. Easier to deal with coordinates, takes less RAM.
+			let raster = image.readRasters({window: [0, y, maxX, maxY]});
+			let color0 = raster[0]; // Raster is a TypedArray where elements are colors and their elements are pixel values of that color
+			let x = 0;
+
+			for (let pixel of color0) {
+				// Convert current pixel's coordinates to CRS by:
+				// 1. Multiplying current coordinates by pixel size which will result in distance from top-left corner in CRS units.
+				// 2. Adding this value to top-left corner coordinates which will result in &quot;global&quot; coordinates in CRS units.
+				let crsX = origin[0] + x * xSize, crsY = origin[1] + y * ySize;
+				x++; // Don't forget to increment x
+
+				// Check if coordinates are already in meters (or other &quot;standard&quot; units). If not, convert them.
+				let point;
+				if (projObj.shouldConvertCoordinates)
+					point = geokeysToProj4.convertCoordinates(crsX, crsY, projObj.coordinatesConversionParameters);
+				else
+					point = {x: crsX, y: crsY};
+				// Or just multiply manually to speed up execution by removing function calls:
+				point = {
+					x: crsX * projObj.coordinatesConversionParameters.x,
+					y: crsX * projObj.coordinatesConversionParameters.y,
+				}
+
+				let projectedPoint = projection.forward(point); // Project these coordinates
+				// Work with projected coordinates
+				// ...
+			}
+		}
+	}
+}
+</code></pre>
+<h1>Known issues</h1>
+<p>Only like a third of EPSG datums is mapped to +towgs transforms. Other datums are fine to use, but you'll lose some degree of precision.</p>
+<p>I don't know which geokeys should take precedence over which. I did what seems to be logical, but I might be wrong. If you know anything about it, please, create an issue and describe whether I'm wrong (and how to fix it) or right (so I'll remove this text).</p>
+<h1>Manually updating from EPSG database</h1>
+<p>This section is intended for the maintainers, but since there're no maintainers for now, it might be useful for the regular users.</p>
+<p>Unfortunately, <a href="https://epsg.org">epsg.org</a> doesn't provide public access to their database. You need to register an account, and only then you'll be able to download database. Since all of that is for the users and not for bots, both client and server might change in the future, so there's no point in writing self-update script.</p>
+<p>To update:</p>
+<ol>
+<li>Clone this repo <em>(or navigate to <code>node_modules</code> if you want to use it from there, though, you'll lose all changes when you'll run <code>npm install</code> on your project).</em></li>
+<li>Run <code>npm install</code> on cloned repo.</li>
+<li>Set up <a href="https://www.postgresql.org/">PostgreSQL</a> server <em>(other RDBMS are not supported)</em>. Default configuration should be fine, just create a user and a database for that user.</li>
+<li>Head over to <a href="https://epsg.org/download-dataset.html">here</a>, create an account (if you don't have one) and download PostgreSQL scripts.</li>
+<li>Extract downloaded scripts to <code>postgres_prep</code> directory.</li>
+<li>Run <code>npm run-script update-all</code> to update everything and rebuilds the project. See arguments below. <strong>Warning: this script utilises <code>epsg</code> schema and will erase it completely! It's hardcoded and can't be changed.</strong> To avoid data loss, create a separate database solely to run this script.</li>
+<li><strong>For maintainers:</strong> commit the whole project to the GitHub and create a pull request.</li>
+</ol>
+<p>There're actually two scripts: <code>update-all</code> which has been described above and <code>update-existing</code> which will update project files from existing database. Both of these scripts accepts following arguments:</p>
+<pre class="prettyprint source"><code>--host          - PostgreSQL host                      - Defaults to &quot;localhost&quot;
+--port          - PostgreSQL port                      - Defaults to &quot;5432&quot;
+--database      - Database containing &quot;epsg&quot; schema    - Defaults to &quot;postgres&quot;
+--user          - PostgreSQL database user             - Defaults to &quot;user&quot;
+--password      - Password for the user                - Defaults to &quot;12345&quot;
+</code></pre>
+<p>Arguments passed to npm scripts in following manner: <code>npm run-script [script name] -- [script arguments]</code>, for example: <code>npm run-script update-all -- --user myuser --password mypassword</code>. Note the <code>--</code> separator, it should always present when using this library's scripts.</p>
+<h1>FAQ</h1>
+<h2>Why beta?</h2>
+<p>Because this library is new. I'll wait for a couple of months to see if there're any bugs, fix them and release a finished version.</p>
+<h2>How is it different from <a href="https://github.com/derhuerst/epsg-index">epsg-index</a>?</h2>
+<p>epsg-index only provides projections definitions, GeoTIFF uses more than that. Actually, this library uses epsg-index under-the-hood!</p>
+<h2>How does it compare to already existing and battle-proven libraries such as GDAL?</h2>
+<p>Pros:</p>
+<ol>
+<li>Can be used in a browser. There're no alternatives for now except for compiling another library to WebAssembly. Even then this library wins because it can run in ES3 environment (any browser from 2000 year).</li>
+<li>Easier to use in Node since this library is written in pure JS. Non-JS libraries requires a wrapper or use of CLI.</li>
+</ol>
+<p>Cons:</p>
+<ol>
+<li>Libraries such as GDAL are, in fact, already battle-proven. Since this library is new, I'm the sole developer for now, and I'm not a cartographer, there might be some bugs.</li>
+<li>Since there're no maintainers to update database, more popular libraries</li>
+</ol>
+<p><strong>To summarize:</strong> use this library for a frontend, but existing libraries with a wrapper might be better for a backend;</p>
+<h2>This library produces wrong results!</h2>
+<p>This library only maps geokeys to their Proj4 definitions and builds a final Proj4 string. It doesn't perform any projections.</p>
+<p>If you've encountered a bug, please, take a look at Proj4 string first and compare it to one generated by a professional GIS. If something is fundamentally wrong, it's the issue of this library. Otherwise, there's something wrong with Proj4.</p>
+<p>Please, don't report redundant parameters <em>(for example, <code>+a</code> and <code>+b</code> that are the same as <code>+ellps</code> provides)</em> as a bug. This behavior simplifies development, increases performance by not making useless comparisons and ensures that the right parameters are used.</p>
+<p>Missing <code>+units</code> is also not a bug, you're converting coordinates to meters by using <code>geokeysToProj4.convertCoordinates()</code>.</p>
+<h1>Contributing</h1>
+<p>You can contribute by solving <a href="#known-issues">described issues</a> or by <a href="#looking-for-maintainers">maintaining the database</a>.</p>
+<h1>Related projects</h1>
+<ol>
+<li><a href="https://github.com/geotiffjs/geotiff.js/">geotiff.js</a> is a library that can read GeoTIFF images.</li>
+<li><a href="https://github.com/proj4js/proj4js">proj4js</a> is a port of Proj4 to JS.</li>
+<li><a href="https://github.com/derhuerst/epsg-index">epsg-index</a> is a machine-readable index of all EPSG coordinate systems, used by this library.</li>
+<li><a href="https://epsg.io">epsg.io</a> is a website that provides all the EPSG stuff mostly in human-readable form, and an API to access it. Used by this library with <a href="https://github.com/derhuerst/epsg-index">epsg-index</a> to grab projections definitions.</li>
+<li><a href="https://github.com/GeoTIFF/geokeys-to-proj4js">geokeys-to-proj4js</a> is a project with the same goal but far from to be finished, and looks abandoned.</li>
+</ol></article>
+    </section>
+
+
+
+
+
+
+
+		</div>
+	</div>
+
+	<div class="clearfix"></div>
+
+	
+		<div class="col-md-3">
+			<div id="toc" class="col-md-3 hidden-xs hidden-sm hidden-md"></div>
+		</div>
+	
+
+</div>
+</div>
+
+
+    <div class="modal fade" id="searchResults">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            <h4 class="modal-title">Search results</h4>
+          </div>
+          <div class="modal-body"></div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+          </div>
+        </div><!-- /.modal-content -->
+      </div><!-- /.modal-dialog -->
+    </div>
+
+
+<footer>
+
+	<div style='width: 100%; text-align: center;'><a href='https://github.com/matafokka'>(c) matafokka</a></div>
+
+
+<span class="jsdoc-message">
+	Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.7</a>
+	
+		on 2021-07-19T20:31:43+03:00
+	
+	using the <a href="https://github.com/docstrap/docstrap">DocStrap template</a>.
+</span>
+</footer>
+
+<script src="scripts/docstrap.lib.js"></script>
+<script src="scripts/toc.js"></script>
+
+    <script type="text/javascript" src="scripts/fulltext-search-ui.js"></script>
+
+
+<script>
+$( function () {
+	$( "[id*='$']" ).each( function () {
+		var $this = $( this );
+
+		$this.attr( "id", $this.attr( "id" ).replace( "$", "__" ) );
+	} );
+
+	$( ".tutorial-section pre, .readme-section pre, pre.prettyprint.source" ).each( function () {
+		var $this = $( this );
+
+		var example = $this.find( "code" );
+		exampleText = example.html();
+		var lang = /{@lang (.*?)}/.exec( exampleText );
+		if ( lang && lang[1] ) {
+			exampleText = exampleText.replace( lang[0], "" );
+			example.html( exampleText );
+			lang = lang[1];
+		} else {
+			var langClassMatch = example.parent()[0].className.match(/lang\-(\S+)/);
+			lang = langClassMatch ? langClassMatch[1] : "javascript";
+		}
+
+		if ( lang ) {
+
+			$this
+			.addClass( "sunlight-highlight-" + lang )
+			.addClass( "linenums" )
+			.html( example.html() );
+
+		}
+	} );
+
+	Sunlight.highlightAll( {
+		lineNumbers : true,
+		showMenu : true,
+		enableDoclinks : true
+	} );
+
+	$.catchAnchorLinks( {
+        navbarOffset: 10
+	} );
+	$( "#toc" ).toc( {
+		anchorName  : function ( i, heading, prefix ) {
+			return $( heading ).attr( "id" ) || ( prefix + i );
+		},
+		selectors   : "#toc-content h1,#toc-content h2,#toc-content h3,#toc-content h4",
+		showAndHide : false,
+		smoothScrolling: true
+	} );
+
+	$( "#main span[id^='toc']" ).addClass( "toc-shim" );
+	$( '.dropdown-toggle' ).dropdown();
+
+    $( "table" ).each( function () {
+      var $this = $( this );
+      $this.addClass('table');
+    } );
+
+} );
+</script>
+
+
+
+<!--Navigation and Symbol Display-->
+
+
+<!--Google Analytics-->
+
+
+
+    <script type="text/javascript">
+        $(document).ready(function() {
+            SearcherDisplay.init();
+        });
+    </script>
+
+
+</body>
+</html>
