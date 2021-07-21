@@ -1,14 +1,15 @@
 # geotiff-geokeys-to-proj4 beta
 
-This library converts geokeys embedded in GeoTIFF file to Proj4 string, so you can georeference your images. Intended to be used with [geotiff.js](https://github.com/geotiffjs/geotiff.js/) and [proj4js](https://github.com/proj4js/proj4js), it's basically a glue between these libraries, but it can be used with alternatives.
+This library converts GeoTIFF's geokeys to Proj4 string, so you can [consume](#why-do-i-need-it) your images.
+ 
+Intended to be used with [geotiff.js](https://github.com/geotiffjs/geotiff.js/) and [proj4js](https://github.com/proj4js/proj4js), it's basically a glue between these libraries, but it can be used with alternatives.
 
 Designed for both frontend and backend. Supports ES3+ environments *(any browser from 2000 year)*. Size is ~1 Mb *(despite what npm says, it counts both sources and bundle)*.
 
 Grab it from npm: `npm install geotiff-geokeys-to-proj4`.
 
-### Looking for maintainers!
-
-This library needs monthly database updates. Please, see [this section](#manually-updating-from-epsg-database) on how to do it. If you want to help, please, create an issue to let me know that we've got a maintainer, and submit pull requests with the updated files.
+## Looking for maintainers!
+EPSG updates their database once in a month, these updates needs to be integrated into this library. For now, there's no one to perform this task. If you want to help, please, see [how to update the database](#manually-updating-from-epsg-database), create an issue to let me know that we've got a maintainer, and submit pull requests with the updated files.
 
 # [Docs](https://matafokka.github.io/geotiff-geokeys-to-proj4/module-geokeysToProj4.html)
 
@@ -19,8 +20,6 @@ This library needs monthly database updates. Please, see [this section](#manuall
 In **Node.js** or with **bundler**: `const geokeysToProj4 = require("geotiff-geokeys-to-proj4");`
 
 In a **browser**: `<script src="path/to/main-dist.js"></script>` - after that you'll have `geokeysToProj4` global variable.
-
-If you're using **global transforms**, consider importing sources: `const geokeysToProj4 = require("geotiff-geokeys-to-proj4/main");` or `<script src="path/to/main.js"></script>`
 
 ## General usage
 
@@ -58,7 +57,8 @@ async function workWithGeoTIFF(blob) {
 		let projection = proj4(projObj.proj4, "WGS84"); // Project our GeoTIFF to WGS84
 
 		// Now you may want to deal with errors. Unfortunately, errors are unavoidable, but in most cases, you can warn the user or just continue on.
-		// All occurred errors will be in projObj.errors object. See the docs for more information.
+		// All occurred errors will be in projObj.errors object. See the docs for more information:
+		https://matafokka.github.io/geotiff-geokeys-to-proj4/module-geokeysToProj4.html#.ConversionErrors__anchor
 
 		// Work with pixels
 		// For looping over pixels
@@ -136,6 +136,18 @@ There're actually two scripts: `update-all` which has been described above and `
 Arguments passed to npm scripts in following manner: `npm run-script [script name] -- [script arguments]`, for example: `npm run-script update-all -- --user myuser --password mypassword`. Note the `--` separator, it should always present when using this library's scripts.
 
 # FAQ
+
+## Why do I need it?
+
+Every GeoTIFF is bound to some kind of Coordinate Reference System (CRS) which in combintaion with georeferencing data defines where pixel coordinates are on the Earth. These CRS are quite different from what you can find, let's say, in Leaflet or OpenLayers which uses WGS *(which is CRS too)* by default.
+
+So you need to convert image coordinates from one CRS to another. [proj4js](https://github.com/proj4js/proj4js) is the best tool to do that. You need to supply an input and output CRS *(which Proj4 calls a projection; yes, terminology is quite confusing)* to it in form of a string.
+
+For output, you can specify whatever your software is using. But input is defined by geokeys *(information embedded into GeoTIFF file)*. Geokeys are really hard to handle. This library will create an input Proj4 string for you.
+
+How to perform all of that is described in [example](#general-usage) above.
+
+Without these procedures, you'll get wrong results.
 
 ## Why beta?
 
