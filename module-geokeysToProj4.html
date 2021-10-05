@@ -37,6 +37,13 @@
 				</ul>
 			</li>
 			
+			<li class="dropdown">
+				<a href="global.html" class="dropdown-toggle" data-toggle="dropdown">Global<b class="caret"></b></a>
+				<ul class="dropdown-menu inline">
+					<li><a href="global.html">Global</a></li>
+				</ul>
+			</li>
+			
 		</ul>
         
             <div class="col-sm-3 col-md-3">
@@ -76,6 +83,22 @@
 <article>
     <div class="container-overview">
     
+        
+            <div class="description"><p>This library converts geokeys to Proj4 string and contains following functions:</p>
+<ol>
+<li><a href="module-geokeysToProj4.html#.toProj4"><code>module:geokeysToProj4.toProj4</code></a> Does actual conversion</li>
+<li><a href="module-geokeysToProj4.html#.convertCoordinates"><code>module:geokeysToProj4.convertCoordinates</code></a> Converts coordinates to use with proj4</li>
+</ol>
+<p>In general, you want to:</p>
+<ol>
+<li>Read geokeys.</li>
+<li>Pass them to <code>geokeysToProj4.toProj4()</code> (let's call returned object <code>projObj</code>).</li>
+<li>Pass <code>projObj.proj4</code> (which is Proj4 string) to proj4js.</li>
+<li>Convert pixel coordinates to CRS coordinates (let's call them <code>crsX</code> and <code>crsY</code>).</li>
+<li>Convert CRS coordinates to usable units <em>(in most cases, meters, but GeoTIFF allows speed, angular speed, and scale)</em>: <code>geokeysToProj4(crsX, crsY, projObj.coordinatesConversionParameters)</code>.</li>
+<li>The returned object will contain x and y coordinates which are ready to be projected with proj4js. So project them.</li>
+</ol>
+<p>Of course, you can alter this workflow to use this library with any other (presumably, server-side) software.</p></div>
         
 
         
@@ -747,504 +770,15 @@
             
                 
 <hr>
-<dt class="name" id=".Point">
-    <h4 id=".Point">Point</h4>
+<dt class="name" id=".GeoKeys">
+    <h4 id=".GeoKeys">GeoKeys</h4>
 
     
 </dt>
 <dd>
     
     <div class="description">
-        <p>Represents a point. X and Y coordinates are not necessarily cartesian coordinates (might be lon/lat, depends on CRS) and not in this order (if axes has been swapped by GeoTIFF).</p>
-    </div>
-    
-
-    
-        <h5>Type:</h5>
-        <ul>
-            <li>
-                
-<span class="param-type">Object</span>
-
-
-
-            </li>
-        </ul>
-    
-
-    
-<dl class="details">
-    
-
-    <h5 class="subsection-title">Properties:</h5>
-
-    <dl>
-
-<table class="props table table-striped">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>x</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">number</span>
-
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>X coordinate (coordinate of a first axis of CRS) of a point</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>y</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">number</span>
-
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>Y coordinate (coordinate of a second axis of CRS) of a point</p></td>
-        </tr>
-
-    
-    </tbody>
-</table>
-</dl>
-
-    
-
-	
-
-	
-
-	
-
-    
-
-    
-
-    
-
-    
-
-	
-
-	
-
-	
-
-	
-
-	
-
-
-
-	
-
-	
-
-	
-
-	
-</dl>
-
-
-    
-</dd>
-
-            
-                
-<hr>
-<dt class="name" id=".ProjectionParameters">
-    <h4 id=".ProjectionParameters">ProjectionParameters</h4>
-
-    
-</dt>
-<dd>
-    
-    <div class="description">
-        <p>Returned projection parameters</p>
-    </div>
-    
-
-    
-        <h5>Type:</h5>
-        <ul>
-            <li>
-                
-<span class="param-type">Object</span>
-
-
-
-            </li>
-        </ul>
-    
-
-    
-<dl class="details">
-    
-
-    <h5 class="subsection-title">Properties:</h5>
-
-    <dl>
-
-<table class="props table table-striped">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>proj4</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">string</span>
-
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>Proj4 string</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>shouldConvertCoordinates</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">boolean</span>
-
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>If true, coordinates should be converted by using <a href="module-geokeysToProj4.html#.convertCoordinates"><code>module:geokeysToProj4.convertCoordinates</code></a> before passing to proj4js</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>coordinatesConversionParameters</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Object</span>
-|
-
-<span class="param-type">null</span>
-
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>Parameters to pass to <a href="module-geokeysToProj4.html#.convertCoordinates"><code>module:geokeysToProj4.convertCoordinates</code></a></p>
-                <h6>Properties</h6>
-
-<table class="props table table-striped">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>x</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">number</span>
-
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>Multiply X coordinate by this parameter to convert it to standard unit</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>y</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">number</span>
-
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>Multiply Y coordinate by this parameter to convert it to standard unit</p></td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-            </td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>coordinatesUnits</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">"metre"</span>
-|
-
-<span class="param-type">"metre per second"</span>
-|
-
-<span class="param-type">"second"</span>
-|
-
-<span class="param-type">"radian"</span>
-|
-
-<span class="param-type">"radian per second"</span>
-|
-
-<span class="param-type">"scale"</span>
-|
-
-<span class="param-type">"scale per second"</span>
-|
-
-<span class="param-type">"degree"</span>
-
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>Coordinates units after conversion. EPSG defines speed, angular speed and scale as linear units, and GeoTIFF relies on EPSG. So there's a chance that coordinates will represent something's different from distance (in case of PCS). Note: GCS will always use degrees; if PCS uses angles, radians will be used.</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>isGCS</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">boolean</span>
-
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>If set to true, GCS is used. Otherwise, PCS is used.</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>errors</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type"><a href="module-geokeysToProj4.html#.ConversionErrors">module:geokeysToProj4.ConversionErrors</a></span>
-
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>Errors that have occurred while processing geokeys. If no error has occurred, there will be an empty object.</p></td>
-        </tr>
-
-    
-    </tbody>
-</table>
-</dl>
-
-    
-
-	
-
-	
-
-	
-
-    
-
-    
-
-    
-
-    
-
-	
-
-	
-
-	
-
-	
-
-	
-
-
-
-	
-
-	
-
-	
-
-	
-</dl>
-
-
-    
-</dd>
-
-            
-                
-<hr>
-<dt class="name" id="~GeoKeys">
-    <h4 id="~GeoKeys">GeoKeys</h4>
-
-    
-</dt>
-<dd>
-    
-    <div class="description">
-        <p>Geokeys. If you're working with geotiff library, this is result of <code>image.getGeoKeys()</code>.</p>
+        <p>Geokeys. If you're working with <code>geotiff</code> library, this is result of <code>image.getGeoKeys()</code>.</p>
     </div>
     
 
@@ -2197,6 +1731,419 @@
     
 </dd>
 
+            
+                
+<hr>
+<dt class="name" id=".Point">
+    <h4 id=".Point">Point</h4>
+
+    
+</dt>
+<dd>
+    
+    <div class="description">
+        <p>Represents a point. X and Y coordinates are not necessarily cartesian coordinates (might be lon/lat, depends on CRS) and not in this order (if axes has been swapped by GeoTIFF).</p>
+    </div>
+    
+
+    
+        <h5>Type:</h5>
+        <ul>
+            <li>
+                
+<span class="param-type">Object</span>
+
+
+
+            </li>
+        </ul>
+    
+
+    
+<dl class="details">
+    
+
+    <h5 class="subsection-title">Properties:</h5>
+
+    <dl>
+
+<table class="props table table-striped">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>x</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>X coordinate (coordinate of a first axis of CRS) of a point</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>y</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Y coordinate (coordinate of a second axis of CRS) of a point</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+</dl>
+
+    
+
+	
+
+	
+
+	
+
+    
+
+    
+
+    
+
+    
+
+	
+
+	
+
+	
+
+	
+
+	
+
+
+
+	
+
+	
+
+	
+
+	
+</dl>
+
+
+    
+</dd>
+
+            
+                
+<hr>
+<dt class="name" id=".ProjectionParameters">
+    <h4 id=".ProjectionParameters">ProjectionParameters</h4>
+
+    
+</dt>
+<dd>
+    
+    <div class="description">
+        <p>Returned projection parameters</p>
+    </div>
+    
+
+    
+        <h5>Type:</h5>
+        <ul>
+            <li>
+                
+<span class="param-type">Object</span>
+
+
+
+            </li>
+        </ul>
+    
+
+    
+<dl class="details">
+    
+
+    <h5 class="subsection-title">Properties:</h5>
+
+    <dl>
+
+<table class="props table table-striped">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>proj4</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Proj4 string</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>shouldConvertCoordinates</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>If true, coordinates should be converted by using <a href="module-geokeysToProj4.html#.convertCoordinates"><code>module:geokeysToProj4.convertCoordinates</code></a> before passing to proj4js</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>coordinatesConversionParameters</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="global.html#CoordinateConversionParameters">CoordinateConversionParameters</a></span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Parameters to pass to <a href="module-geokeysToProj4.html#.convertCoordinates"><code>module:geokeysToProj4.convertCoordinates</code></a></p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>coordinatesUnits</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">"metre"</span>
+|
+
+<span class="param-type">"metre per second"</span>
+|
+
+<span class="param-type">"second"</span>
+|
+
+<span class="param-type">"radian"</span>
+|
+
+<span class="param-type">"radian per second"</span>
+|
+
+<span class="param-type">"scale"</span>
+|
+
+<span class="param-type">"scale per second"</span>
+|
+
+<span class="param-type">"degree"</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Coordinates units after conversion. EPSG defines speed, angular speed and scale as linear units, and GeoTIFF relies on EPSG. So there's a chance that coordinates will represent something's different from distance (in case of PCS). Note: GCS will always use degrees; if PCS uses angles, radians will be used.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>isGCS</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>If set to true, GCS is used. Otherwise, PCS is used.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>errors</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="module-geokeysToProj4.html#.ConversionErrors">module:geokeysToProj4.ConversionErrors</a></span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Errors that have occurred while processing geokeys. If no error has occurred, there will be an empty object.</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+</dl>
+
+    
+
+	
+
+	
+
+	
+
+    
+
+    
+
+    
+
+    
+
+	
+
+	
+
+	
+
+	
+
+	
+
+
+
+	
+
+	
+
+	
+
+	
+</dl>
+
+
+    
+</dd>
+
             </dl>
     
 
@@ -2247,7 +2194,7 @@
 <span class="jsdoc-message">
 	Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.7</a>
 	
-		on 2021-07-19T20:31:43+03:00
+		on 2021-10-05T22:16:03+03:00
 	
 	using the <a href="https://github.com/docstrap/docstrap">DocStrap template</a>.
 </span>
