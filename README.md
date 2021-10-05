@@ -1,4 +1,4 @@
-# geotiff-geokeys-to-proj4 beta
+# geotiff-geokeys-to-proj4
 
 This library converts GeoTIFF's geokeys to Proj4 string, so you can [consume](#why-do-i-need-it) your images.
  
@@ -13,11 +13,19 @@ EPSG updates their database once in a month, these updates needs to be integrate
 
 # [Docs](https://matafokka.github.io/geotiff-geokeys-to-proj4/module-geokeysToProj4.html)
 
+# Demo & example
+
+[geotiff-3d-dem-viewer](https://matafokka.github.io/geotiff-3d-dem-viewer) demonstrates how to read GeoTIFF files and display them in [CesiumJS](https://cesium.com/) as 3D terrain. Check the [source code](https://github.com/matafokka/geotiff-3d-dem-viewer) for more.
+
+Still, be sure to check out usage example below! 
+
 # Usage
 
 ## Importing this library
 
 In **Node.js** or with **bundler**: `const geokeysToProj4 = require("geotiff-geokeys-to-proj4");`
+
+In **TypeScript**: `import * as geokeysToProj4 from "geotiff-geokeys-to-proj4";`
 
 In a **browser**: `<script src="path/to/main-dist.js"></script>` - after that you'll have `geokeysToProj4` global variable.
 
@@ -48,7 +56,7 @@ async function workWithGeoTIFF(blob) {
 	let tiff = await geotiff.fromBlob(blob); // Read blob
 	let imageCount = await tiff.getImageCount(); // Get image count
 
-	// Work with each image in GeoTIFF
+	// Work with each image in a file
 	for (let i = 0; i < imageCount; i++) {
 		let image = await tiff.getImage(i); // Get image instance
 		let geoKeys = image.getGeoKeys(); // Get geokeys
@@ -58,43 +66,46 @@ async function workWithGeoTIFF(blob) {
 
 		// Now you may want to deal with errors. Unfortunately, errors are unavoidable, but in most cases, you can warn the user or just continue on.
 		// All occurred errors will be in projObj.errors object. See the docs for more information:
-		https://matafokka.github.io/geotiff-geokeys-to-proj4/module-geokeysToProj4.html#.ConversionErrors__anchor
+		// https://matafokka.github.io/geotiff-geokeys-to-proj4/module-geokeysToProj4.html#.ConversionErrors__anchor
 
 		// Work with pixels
 		// For looping over pixels
-		let maxX = image.getWidth(), maxY = image.getHeight();
-		// Pixel dimensions for converting image coordinates to CRS coordinates
-		let origin = image.getOrigin(), resolution = image.getResolution(), xSize = resolution[0],
-			ySize = resolution[1];
+		const width = image.getWidth(), height = image.getHeight(),
+		// Pixel dimensions for converting image coordinates to source CRS coordinates
+		[originX, originY] = image.getOrigin(), [xSize, ySize] = image.getResolution();
 
-		for (let y = 0; y < maxY; y++) {
+		// Read rows
+		for (let y = 0; y < height; y++) {
 			// Read one row of pixels. Easier to deal with coordinates, takes less RAM.
-			let raster = image.readRasters({window: [0, y, maxX, maxY]});
+			let raster = await image.readRasters({window: [0, y, width, y + 1]});
 			let color0 = raster[0]; // Raster is a TypedArray where elements are colors and their elements are pixel values of that color
-			let x = 0;
 
-			for (let pixel of color0) {
+			// Read columns. Since we're reading full row, we can replace color0.length with width, but I find color0.length more explicit.
+			for (let x = 0; i < color0.length; x++) {
+
 				// Convert current pixel's coordinates to CRS by:
 				// 1. Multiplying current coordinates by pixel size which will result in distance from top-left corner in CRS units.
 				// 2. Adding this value to top-left corner coordinates which will result in "global" coordinates in CRS units.
-				let crsX = origin[0] + x * xSize, crsY = origin[1] + y * ySize;
-				x++; // Don't forget to increment x
+				// This will work because image is transformed by Affine Transformation which preserves parallelism.
+				// Warning: this logic works only for source CRS, target CRS might screw up parallel lines, so pixel dimensions will not be constant!
+				let crsX = originX + x * xSize, crsY = originY + y * ySize;
 
 				// Check if coordinates are already in meters (or other "standard" units). If not, convert them.
+				// You can remove the condition, if you consider it as premature optimisation, convertCoordinates() will work just fine in any case.
 				let point;
 				if (projObj.shouldConvertCoordinates)
 					point = geokeysToProj4.convertCoordinates(crsX, crsY, projObj.coordinatesConversionParameters);
 				else
 					point = {x: crsX, y: crsY};
+
 				// Or just multiply manually to speed up execution by removing function calls:
 				point = {
 					x: crsX * projObj.coordinatesConversionParameters.x,
-					y: crsX * projObj.coordinatesConversionParameters.y,
+					y: crsY * projObj.coordinatesConversionParameters.y,
 				}
 
 				let projectedPoint = projection.forward(point); // Project these coordinates
-				// Work with projected coordinates
-				// ...
+				// Work with projected coordinates...
 			}
 		}
 	}
@@ -120,7 +131,7 @@ To update:
 1. Set up [PostgreSQL](https://www.postgresql.org/) server *(other RDBMS are not supported)*. Default configuration should be fine, just create a user and a database for that user.
 1. Head over to [here](https://epsg.org/download-dataset.html), create an account (if you don't have one) and download PostgreSQL scripts.
 1. Extract downloaded scripts to `postgres_prep` directory.
-1. Run `npm run-script update-all` to update everything and rebuilds the project. See arguments below. **Warning: this script utilises `epsg` schema and will erase it completely! It's hardcoded and can't be changed.** To avoid data loss, create a separate database solely to run this script.
+1. Run `npm run update-all` to update everything and rebuilds the project. See arguments below. **Warning: this script utilises `epsg` schema and will erase it completely! It's hardcoded and can't be changed.** To avoid data loss, create a separate database solely to run this script.
 1. **For maintainers:** commit the whole project to the GitHub and create a pull request.
 
 There're actually two scripts: `update-all` which has been described above and `update-existing` which will update project files from existing database. Both of these scripts accepts following arguments:
@@ -133,7 +144,7 @@ There're actually two scripts: `update-all` which has been described above and `
 --password      - Password for the user                - Defaults to "12345"
 ```
 
-Arguments passed to npm scripts in following manner: `npm run-script [script name] -- [script arguments]`, for example: `npm run-script update-all -- --user myuser --password mypassword`. Note the `--` separator, it should always present when using this library's scripts.
+Arguments passed to npm scripts in following manner: `npm run [script name] -- [script arguments]`, for example: `npm run update-all -- --user myuser --password mypassword`. Note the `--` separator, it should always present when using this library's scripts.
 
 # FAQ
 
@@ -148,10 +159,6 @@ For output, you can specify whatever your software is using. But input is define
 How to perform all of that is described in [example](#general-usage) above.
 
 Without these procedures, you'll get wrong results.
-
-## Why beta?
-
-Because this library is new. I'll wait for a couple of months to see if there're any bugs, fix them and release a finished version.
 
 ## How is it different from [epsg-index](https://github.com/derhuerst/epsg-index)?
 
@@ -170,6 +177,14 @@ Cons:
 1. Since there're no maintainers to update database, more popular libraries 
 
 **To summarize:** use this library for a frontend, but existing libraries with a wrapper might be better for a backend;
+
+## The example above can be put in a function that takes a callback. Why didn't you do that?
+
+Because:
+
+1. It's not the goal of this library.
+1. It'll slow down reading which is already quite slow.
+1. You'll still need to understand how all this stuff works and be able to modify the example when needed.
 
 ## This library produces wrong results!
 

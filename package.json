@@ -1,14 +1,15 @@
 {
   "name": "geotiff-geokeys-to-proj4",
-  "version": "2021.07.19-beta",
+  "version": "2021.10.05",
   "description": "A library that converts GeoTIFFs geokeys to Proj4 string",
   "main": "main-dist.js",
+  "types": "types.d.ts",
   "scripts": {
     "test": "node test.js",
     "update-existing": "node EPSG/update.js",
     "build": "browserify main.js --standalone geokeysToProj4 | npx google-closure-compiler --js_output_file=main-dist.js --language_out ECMASCRIPT3",
     "update-all": "node updateAll.js",
-    "generateDocs": "jsdoc ./ -c jsdoc.conf.json"
+    "docs": "jsdoc ./ -c jsdoc.conf.json"
   },
   "keywords": [
     "geotiff",
@@ -26,6 +27,7 @@
   "homepage": "https://github.com/matafokka/geotiff-geokeys-to-proj4",
   "repository": "https://github.com/matafokka/geotiff-geokeys-to-proj4",
   "devDependencies": {
+    "@otris/jsdoc-tsd": "^2.0.4",
     "browserify": "^16.1.1",
     "core-js": "^3.7.0",
     "epsg-index": "^1.1.0",

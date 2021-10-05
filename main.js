@@ -1,5 +1,3 @@
-/** @module geokeysToProj4 */
-
 // Polyfills
 require("core-js/stable/object/keys");
 require("core-js/stable/string/trim");
@@ -33,8 +31,8 @@ const userDefined = 32767;
 const tokensOrder = ["+proj", "+lat_0", "+lon_0", "+lat_1", "+lon_1", "+lat_2", "+lon_2", "+k_0", "+x_0", "+y_0", "+ellps", "+a", "+b", "+pm", "+towgs84"];
 
 /**
- * Geokeys. If you're working with geotiff library, this is result of `image.getGeoKeys()`.
- * @typedef {Object} GeoKeys
+ * Geokeys. If you're working with `geotiff` library, this is result of `image.getGeoKeys()`.
+ * @typedef {Object} module:geokeysToProj4.GeoKeys
  * @property {number} GeographicTypeGeoKey See GeoTIFF docs for more information
  * @property {number} GeogGeodeticDatumGeoKey See GeoTIFF docs for more information
  * @property {number} GeogPrimeMeridianGeoKey See GeoTIFF docs for more information
@@ -92,13 +90,18 @@ const tokensOrder = ["+proj", "+lat_0", "+lon_0", "+lat_1", "+lon_1", "+lat_2", 
  */
 
 /**
+ * Parameters to pass to {@link module:geokeysToProj4.convertCoordinates} or to convert coordinates manually
+ * @typedef {Object} CoordinateConversionParameters
+ * @property {number} x Multiply X coordinate by this parameter to convert it to standard unit
+ * @property {number} y Multiply Y coordinate by this parameter to convert it to standard unit
+ */
+
+/**
  * Returned projection parameters
  * @typedef {Object} module:geokeysToProj4.ProjectionParameters
  * @property {string} proj4 Proj4 string
  * @property {boolean} shouldConvertCoordinates If true, coordinates should be converted by using {@link module:geokeysToProj4.convertCoordinates} before passing to proj4js
- * @property {Object|null} coordinatesConversionParameters Parameters to pass to {@link module:geokeysToProj4.convertCoordinates}
- * @property {number} coordinatesConversionParameters.x Multiply X coordinate by this parameter to convert it to standard unit
- * @property {number} coordinatesConversionParameters.y Multiply Y coordinate by this parameter to convert it to standard unit
+ * @property {CoordinateConversionParameters} coordinatesConversionParameters Parameters to pass to {@link module:geokeysToProj4.convertCoordinates}
  * @property {"metre"|"metre per second"|"second"|"radian"|"radian per second"|"scale"|"scale per second"|"degree"} coordinatesUnits Coordinates units after conversion. EPSG defines speed, angular speed and scale as linear units, and GeoTIFF relies on EPSG. So there's a chance that coordinates will represent something's different from distance (in case of PCS). Note: GCS will always use degrees; if PCS uses angles, radians will be used.
  * @property {boolean} isGCS If set to true, GCS is used. Otherwise, PCS is used.
  * @property {module:geokeysToProj4.ConversionErrors} errors Errors that have occurred while processing geokeys. If no error has occurred, there will be an empty object.
@@ -125,6 +128,8 @@ const tokensOrder = ["+proj", "+lat_0", "+lon_0", "+lat_1", "+lon_1", "+lat_2", 
  * 1. The returned object will contain x and y coordinates which are ready to be projected with proj4js. So project them.
  *
  * Of course, you can alter this workflow to use this library with any other (presumably, server-side) software.
+ *
+ * @module geokeysToProj4
  */
 module.exports = {
 	/**
