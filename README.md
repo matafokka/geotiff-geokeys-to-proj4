@@ -15,7 +15,7 @@ EPSG updates their database once in a month, these updates needs to be integrate
 
 # Demo & example
 
-[geotiff-3d-dem-viewer](https://matafokka.github.io/geotiff-3d-dem-viewer) demonstrates how to read GeoTIFF files and display them in [CesiumJS](https://cesium.com/) as 3D terrain. Check the [source code](https://github.com/matafokka/geotiff-3d-dem-viewer) for more.
+[geotiff-3d-dem-viewer](https://matafokka.github.io/geotiff-3d-dem-viewer) demonstrates how to read GeoTIFF files and display them in [CesiumJS](https://cesium.com/) as 3D terrain. Check the [source code](https://github.com/matafokka/geotiff-3d-dem-viewer) for more. Files that'll interest you the most: [initial image setup](https://github.com/matafokka/geotiff-3d-dem-viewer/blob/master/src/components/Menu.tsx), [where all interesting stuff is](https://github.com/matafokka/geotiff-3d-dem-viewer/blob/master/src/etc/GeoTIFFManager.ts).
 
 Still, be sure to check out usage example below! 
 
