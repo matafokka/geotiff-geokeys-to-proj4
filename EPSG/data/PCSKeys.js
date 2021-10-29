@@ -46,8 +46,8 @@ let k = {
 			p: "y_0"
 		},
 		ProjScaleAtCenterGeoKey: {
-			units: 3,
-			proj: "k_0"
+			u: 3,
+			p: "k_0"
 		},
 	},
 
@@ -72,8 +72,8 @@ let k = {
 			p: "y_0"
 		},
 		ProjScaleAtNatOriginGeoKey: {
-			units: 3,
-			proj: "k_0"
+			u: 3,
+			p: "k_0"
 		},
 	},
 
@@ -101,11 +101,11 @@ let k = {
 	}
 }
 
-// Aliases. They should have same value, but let's be careful and copy them to another object.
+// Aliases
 
 k.o2.ProjStdParallelGeoKey = k.o1.ProjStdParallel1GeoKey;
 k.o3.ProjOriginLongGeoKey = k.o2.ProjNatOriginLongGeoKey;
-k.o3.ProjOriginLatGeoKey = k.ProjNatOriginLatGeoKey;
-k.o3.ProjScaleAtOriginGeoKey = k.ProjScaleAtNatOriginGeoKey;
+k.o3.ProjOriginLatGeoKey = k.o2.ProjNatOriginLatGeoKey;
+k.o3.ProjScaleAtOriginGeoKey = k.o2.ProjScaleAtNatOriginGeoKey;
 
 module.exports = k;

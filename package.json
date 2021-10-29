@@ -1,6 +1,6 @@
 {
   "name": "geotiff-geokeys-to-proj4",
-  "version": "2021.10.05",
+  "version": "2021.10.29",
   "description": "A library that converts GeoTIFFs geokeys to Proj4 string",
   "main": "main-dist.js",
   "types": "types.d.ts",
