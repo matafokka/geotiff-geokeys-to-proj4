@@ -174,7 +174,7 @@ Pros:
 Cons:
 
 1. Libraries such as GDAL are, in fact, already battle-proven. Since this library is new, I'm the sole developer for now, and I'm not a cartographer, there might be some bugs.
-1. Since there're no maintainers to update database, more popular libraries 
+1. Since there're no maintainers to update database, more popular libraries might have newer data, though, it shouldn't make big difference.
 
 **To summarize:** use this library for a frontend, but existing libraries with a wrapper might be better for a backend;
 
