@@ -8,7 +8,7 @@ const LinearUnits = require("./EPSG/data/LinearUnits.js");
 const ProjCoordTransGeoKey = require("./EPSG/data/ProjCoordTransGeoKey.js");
 const ProjectionGeoKey = require("./EPSG/data/ProjectionGeoKey.js");
 const PCSKeys = require("./EPSG/data/PCSKeys.js");
-const overrides = require("./EPSG/data/CRSOverrides.js");
+const override = require("./EPSG/data/Overrides.js");
 
 const geographicKeysToCopy = {
 	GeogGeodeticDatumGeoKey: require("./EPSG/data/GeogGeodeticDatumGeoKey.js"),
@@ -28,7 +28,7 @@ const userDefined = 32767;
  * @type {string[]}
  * @private
  */
-const tokensOrder = ["+proj", "+lat_0", "+lon_0", "+lat_1", "+lon_1", "+lat_2", "+lon_2", "+k_0", "+x_0", "+y_0", "+ellps", "+a", "+b", "+pm", "+towgs84"];
+const tokensOrder = ["+proj", "+lat_0", "+lon_0", "+lat_1", "+lat_ts", "+lon_1", "+lat_2", "+lon_2", "+k_0", "+x_0", "+y_0", "+ellps", "+a", "+b", "+pm", "+towgs84", "+approx"];
 
 /**
  * Geokeys. If you're working with `geotiff` library, this is result of `image.getGeoKeys()`.
@@ -313,22 +313,20 @@ module.exports = {
 				tokens[kvArr[0].trim()] = kvArr[1].trim();
 		}
 
+		override(tokens); // Apply all necessary overrides
+
 		// Build final string
 
 		proj = "";
 		let tokenArrays = [tokensOrder, Object.keys(tokens)];
 		let processedTokens = {};
 
-		let overridesObj = overrides[tokens["+proj"]];
 		for (let arr of tokenArrays) {
 			for (let token of arr) {
 				if (!(token in tokens) || processedTokens[token])
 					continue;
 
-				// Apply overrides
-				let tokenName = (overridesObj && token in overridesObj) ? overridesObj[token] : token;
-
-				proj += tokenName;
+				proj += token;
 				let tokenValue = tokens[token];
 				if (tokenValue !== null)
 					proj += "=" + tokenValue

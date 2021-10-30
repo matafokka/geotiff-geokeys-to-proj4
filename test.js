@@ -90,6 +90,25 @@ let testKeys = [
 		ProjectedCSTypeGeoKey: 32617,
 		proj4: "+proj=utm +zone=17 +datum=WGS84 +units=m +no_defs",
 	},
+
+	{
+		name: "From #2",
+		GTModelTypeGeoKey: 1,
+		GTRasterTypeGeoKey: 1,
+		GeogEllipsoidGeoKey: 7030,
+		GeogGeodeticDatumGeoKey: 6326,
+		PCSCitationGeoKey: "Transverse Mercator; WGS84; WGS84",
+		ProjCoordTransGeoKey: 1,
+		ProjFalseEastingGeoKey: 500000,
+		ProjFalseNorthingGeoKey: -5300000,
+		ProjLinearUnitsGeoKey: 9001,
+		ProjNatOriginLatGeoKey: 0,
+		ProjNatOriginLongGeoKey: 19,
+		ProjScaleAtNatOriginGeoKey: 0.9993,
+		ProjectedCSTypeGeoKey: 32767,
+		ProjectionGeoKey: 32767,
+		proj4: "+proj=tmerc +lat_0=0 +lon_0=19 +k=0.9993 +x_0=500000 +y_0=-5300000 +datum=WGS84 +units=m +no_defs",
+	}
 ];
 
 // Test runner

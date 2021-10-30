@@ -16,7 +16,7 @@ forEach(`
 
 	// Get ellipsoid definition
 	let ellipsoidString = "";
-	let fromCode = names[result.name.toString()];
+	let fromCode = names[result.id.toString()];
 	if (fromCode)
 		ellipsoidString = fromCode;
 	else {
@@ -28,6 +28,7 @@ forEach(`
 			}
 		}
 	}
+
 	if (ellipsoidString !== "")
 		ellipsoidString = "+ellps=" + ellipsoidString + " ";
 
@@ -44,7 +45,7 @@ forEach(`
 	if (!a || !b)
 		return;
 
-	return `${ellipsoidString}+a=${a} +b=${a}`;
+	return `${ellipsoidString}+a=${a} +b=${b}`;
 }, "GeogEllipsoidGeoKey", `/**
 * Maps EPSG ellipsoids to their data. Proj4 parameter is "+ellps".
 * @type {Object}
