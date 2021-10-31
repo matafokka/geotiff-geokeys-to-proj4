@@ -40,7 +40,7 @@ forEach(`
 
 	let a = result.a * uom, b = result.b * uom;
 	if (result.f)
-		b = a / result.f + a;
+		b = a - a / result.f;
 
 	if (!a || !b)
 		return;

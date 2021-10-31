@@ -223,14 +223,20 @@ module.exports = {
 				axes[axis] = key * units.GeogLinearUnitsGeoKey;
 		}
 
-		let flatteningKey = geoKeys.GeogInvFlatteningGeoKey;
-		if (flatteningKey && axes.GeogSemiMajorAxisGeoKey) // Can't calculate semi minor axis if semi major axis is missing
-			axes.GeogSemiMinorAxisGeoKey = axes.GeogSemiMajorAxisGeoKey / flatteningKey + axes.GeogSemiMajorAxisGeoKey;
+		if (geoKeys.GeogInvFlatteningGeoKey && axes.GeogSemiMajorAxisGeoKey) // Can't calculate semi minor axis if semi major axis is missing
+			axes.GeogSemiMinorAxisGeoKey = axes.GeogSemiMajorAxisGeoKey - axes.GeogSemiMajorAxisGeoKey / geoKeys.GeogInvFlatteningGeoKey;
 
-		if (axes.GeogSemiMajorAxisGeoKey) {
+		if (axes.GeogSemiMajorAxisGeoKey)
 			proj += " +a=" + axes.GeogSemiMajorAxisGeoKey;
-			proj += " +b=" + (axes.GeogSemiMinorAxisGeoKey || axes.GeogSemiMajorAxisGeoKey);
-		}
+
+		let b;
+		if (axes.GeogSemiMinorAxisGeoKey)
+			b = axes.GeogSemiMinorAxisGeoKey;
+		else if (proj.indexOf("+b") === -1)
+			b = axes.GeogSemiMajorAxisGeoKey;
+
+		if (b)
+			proj += " +b=" + b;
 
 		// Get prime meridian
 		let pm = geoKeys.GeogPrimeMeridianLongGeoKey;
