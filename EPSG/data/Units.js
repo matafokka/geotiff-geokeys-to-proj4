@@ -2,7 +2,7 @@
 // WARNING: This file has been generated automatically by querying epsg.io
 
 /**
-* Maps EPSG linear units to their multipliers to convert to meters (or standard base values, see below). Proj4 parameter is "+to_meter".
+* Maps EPSG units to their multipliers to convert to meters (or standard base values, see below). Proj4 parameter is "+to_meter".
 * 
 * Some of these units for some reason represents speed, angular speed and time. They're converted to m/s, rad/s and s respectively. Moreover, there's unity and unity/s where length is dimensionless. I guess, they should be treated as meters when projecting.
 *
