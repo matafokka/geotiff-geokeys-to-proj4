@@ -1,7 +1,7 @@
 /* This script generates ellipsoids from epsg database. Can be used standalone or in a worker. */
 
 const forEach = require("./forEachEntryInEPSG.js");
-const LinearUnits = require("./data/LinearUnits.js");
+const Units = require("./data/Units.js");
 const names = require("./data/EllipsoidsNamesToProj.js");
 
 forEach(`
@@ -33,7 +33,7 @@ forEach(`
 		ellipsoidString = "+ellps=" + ellipsoidString + " ";
 
 	// Get axes
-	let uom = LinearUnits[result.uom.toString()];
+	let uom = Units[result.uom.toString()];
 	if (!uom)
 		return undefined;
 	uom = uom.m;

@@ -1,6 +1,6 @@
 /* This script generates ellipsoidal CS from epsg.io. Can be used standalone or in a worker. */
 
-const multipliers = require("./data/toDegreeMultipliers.js");
+const Units = require("./data/Units.js");
 const forEach = require("./forEachEntryInEPSG.js");
 
 forEach(`
@@ -59,9 +59,9 @@ forEach(`
 		if (uom === "deg" || uom === "degree" || uom === "degrees") // Can't just find deg because there're degree with hemisphere and dec degree
 			m = 1;
 		else if (uom.includes("grad") || uom.includes("gon"))
-			m = multipliers["9105"];
+			m = Units["9105"].m * 180 / Math.PI;
 		else if (uom.includes("rad")) // grad handled by previous case
-			m = multipliers["9101"];
+			m = Units["9101"].m * 180 / Math.PI;
 		else
 			return;
 

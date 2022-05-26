@@ -23,13 +23,13 @@ const {Worker} = require('worker_threads');
 const baseDir = "./EPSG/";
 const options = {workerData: require("../dbConnectionParams.js")};
 
-// Fetch linear units first because all other entities depends on it
+// Fetch units first because all other entities depends on it
 fetchLinearUnits();
 
 function fetchLinearUnits() {
-	let linearUnitsWorker = new Worker(baseDir + "LinearUnitsWorker.js", options);
-	linearUnitsWorker.on("exit", () => {
-		new Worker(baseDir + "ConversionsWorker.js", options); // Conversions depends only on linear units, everything else depends on each other
+	let unitsWorker = new Worker(baseDir + "UnitsWorker.js", options);
+	unitsWorker.on("exit", () => {
+		new Worker(baseDir + "ConversionsWorker.js", options); // Conversions depends only on units, everything else depends on each other
 		fetchBasicEntities();
 	});
 }

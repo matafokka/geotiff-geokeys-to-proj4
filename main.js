@@ -3,8 +3,7 @@ require("core-js/stable/object/keys");
 require("core-js/stable/string/trim");
 
 const CRS = require("./EPSG/data/CRS.js");
-const AngularUnits = require("./EPSG/data/toDegreeMultipliers.js");
-const LinearUnits = require("./EPSG/data/LinearUnits.js");
+const Units = require("./EPSG/data/Units.js");
 const ProjCoordTransGeoKey = require("./EPSG/data/ProjCoordTransGeoKey.js");
 const ProjectionGeoKey = require("./EPSG/data/ProjectionGeoKey.js");
 const PCSKeys = require("./EPSG/data/PCSKeys.js");
@@ -184,30 +183,30 @@ module.exports = {
 		let unitDefs = {}; // Values are booleans, true means that GeoTIFF redefines units
 
 		for (let name in units) {
-			let m;
-			let unitsObject = (name === "GeogAngularUnitsGeoKey") ? AngularUnits : LinearUnits;
-			let key = geoKeys[name];
+			let m, key = geoKeys[name];
+
 			if (!key)
 				continue;
 
 			if (key === userDefined) {
-				let splitAt = name.length - 7; // I.e., "GeogLinearUnitsGeoKey" will be split to "GeogLinearUnit" and "sGeoKey"
-				let sizeKeyName = name.substr(0, splitAt) + "SizeGeoKey";
-				let size = geoKeys[sizeKeyName];
+				let splitAt = name.length - 7, // I.e., "GeogLinearUnitsGeoKey" will be split to "GeogLinearUnit" and "sGeoKey"
+					sizeKeyName = name.substr(0, splitAt) + "SizeGeoKey",
+					size = geoKeys[sizeKeyName];
 				if (size)
 					m = size;
-				else {
+				else
 					errors[sizeKeyName + "NotDefined"] = true;
-					m = 1;
-				}
 			} else if (key)
-				m = unitsObject[key.toString()];
+				m = Units[key.toString()]?.m;
 
 			if (!m) {
 				m = 1;
 				errors[name + "NotSupported"] = key; // This EPSG key doesn't exist, assuming meters or degrees
-			} else
+			} else {
 				unitDefs[name] = true;
+				if (name === "GeogAngularUnitsGeoKey")
+					m *= 180 / Math.PI; // Radians are angular base units
+			}
 			units[name] = m;
 		}
 
@@ -277,12 +276,11 @@ module.exports = {
 					continue;
 
 				// Get key definition and units
-				let keyDef = object[key];
-				let m;
+				let keyDef = object[key], m;
 				if (keyDef.u === 1)
 					m = units.GeogAngularUnitsGeoKey;
 				else if (keyDef.u === 2)
-					m = units.ProjLinearUnitsGeoKey.m;
+					m = units.ProjLinearUnitsGeoKey;
 				else
 					m = 1;
 

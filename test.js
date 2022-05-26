@@ -108,7 +108,27 @@ let testKeys = [
 		ProjectedCSTypeGeoKey: 32767,
 		ProjectionGeoKey: 32767,
 		proj4: "+proj=tmerc +lat_0=0 +lon_0=19 +k=0.9993 +x_0=500000 +y_0=-5300000 +datum=WGS84 +units=m +no_defs",
-	}
+	},
+
+	{
+		name: "From #3",
+		GTCitationGeoKey: "UTM Zone 32, Northern Hemisphere",
+		GTModelTypeGeoKey: 1,
+		GTRasterTypeGeoKey: 1,
+		GeogAngularUnitsGeoKey: 9102,
+		GeogCitationGeoKey: "GCS Name = GRS 1980(IUGG, 1980)|Datum = unknown|Ellipsoid = GRS80|Primem = Greenwich|",
+		GeogEllipsoidGeoKey: 32767,
+		GeogGeodeticDatumGeoKey: 32767,
+		GeogInvFlatteningGeoKey: 298.257222101,
+		GeogPrimeMeridianLongGeoKey: 0,
+		GeogSemiMajorAxisGeoKey: 6378137,
+		GeogTOWGS84GeoKey: [ 0, 0, 0 ],
+		GeographicTypeGeoKey: 32767,
+		ProjLinearUnitsGeoKey: 9001,
+		ProjectedCSTypeGeoKey: 32767,
+		ProjectionGeoKey: 16032,
+		proj4: "+proj=tmerc +lat_0=0 +lon_0=9 +k_0=0.9996 +x_0=500000 +y_0=0 +a=6378137 +b=6356752.314140356 +towgs84=0,0,0, +no_defs"
+	},
 ];
 
 // Test runner

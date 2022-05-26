@@ -22,7 +22,6 @@ const forEach = require("./forEachEntryInEPSG.js");
 forEach(`
 	SELECT crs.coord_ref_sys_code AS id,
 	       crs.coord_ref_sys_kind AS type,
-	       coord_sys_code,
 	       crs.datum_code         AS datum,
 	       crs.cmpd_horizcrs_code AS basecrs,
 	       coord_sys_code         AS cs

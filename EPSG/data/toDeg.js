@@ -1,8 +1,9 @@
-const multipliers = require("./toDegreeMultipliers.js");
+const Units = require("./Units.js");
 
 /**
- * Retuns sign from given hemisphere
+ * Returns sign from given hemisphere
  * @param hemisphere {"n"|"s"|"e"|"w"} Hemisphere letter, case insensitive
+ * @return Sign from given hemisphere
  */
 function signFromHemisphere(hemisphere) {
 	let h = hemisphere.toLowerCase();
@@ -19,8 +20,8 @@ function signFromHemisphere(hemisphere) {
  */
 module.exports = function (value, code) {
 	let codeStr = code.toString();
-	if (codeStr in multipliers)
-		return value * multipliers[codeStr];
+	if (codeStr in Units)
+		return value * Units[codeStr].m * 180 / Math.PI;
 
 	// Messed up shit
 	if (code === 9110) {

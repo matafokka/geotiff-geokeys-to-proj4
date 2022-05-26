@@ -1,4 +1,4 @@
-/* This script generates linear units from epsg.io. Can be used standalone or in a worker. */
+/* This script generates units from EPSG database. Can be used standalone or in a worker. */
 
 const BaseUnits = require("./data/KnownBaseUnits.js");
 const forEach = require("./forEachEntryInEPSG.js");
@@ -30,8 +30,8 @@ forEach(`
 		t: baseUnit,
 	};
 
-}, "LinearUnits", `/**
-* Maps EPSG linear units to their multipliers to convert to meters (or standard base values, see below). Proj4 parameter is "+to_meter".
+}, "Units", `/**
+* Maps EPSG units to their multipliers to convert to meters (or standard base values, see below). Proj4 parameter is "+to_meter".
 * 
 * Some of these units for some reason represents speed, angular speed and time. They're converted to m/s, rad/s and s respectively. Moreover, there's unity and unity/s where length is dimensionless. I guess, they should be treated as meters when projecting.
 *

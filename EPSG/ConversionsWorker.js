@@ -2,7 +2,7 @@
 
 const methods = require("./data/Methods.js")
 const parameters = require("./data/MethodParameters.js");
-const LinearUnits = require("./data/LinearUnits.js");
+const Units = require("./data/Units.js");
 const toDeg = require("./data/toDeg.js");
 const forEach = require("./forEachEntryInEPSG.js");
 
@@ -26,12 +26,18 @@ forEach(`
 		let paramDef = parameters[param.f1.toString()], value = param.f2, uomCode = param.f3.toString();
 		if (!paramDef)
 			continue;
-		if (uomCode in LinearUnits)
-			value *= LinearUnits[uomCode].m;
-		else
+
+		if (uomCode in Units) {
+			let {m} = Units[uomCode];
+			if (paramDef.includes("lat") || paramDef.includes("lon"))
+				m *= 180 / Math.PI; // Radians are angular base units
+			value *= m;
+		} else
 			value = toDeg(value, param.f3);
+
 		if (value === null)
 			return;
+
 		method += ` +${paramDef}=${value}`
 	}
 
