@@ -30,6 +30,17 @@ const userDefined = 32767;
 const tokensOrder = ["+proj", "+lat_0", "+lon_0", "+lat_1", "+lat_ts", "+lon_1", "+lat_2", "+lon_2", "+k_0", "+x_0", "+y_0", "+ellps", "+a", "+b", "+pm", "+towgs84", "+approx"];
 
 /**
+ * Parses given argument as float and returns its fixed value
+ * @param n {*} Number to fix
+ * @returns {number|*} Fixed number or original value if it can't be parsed as float
+ */
+const toFixed = (n) => {
+	if (isNaN(n))
+		return n;
+	return parseFloat(parseFloat(n).toFixed(12));
+}
+
+/**
  * Geokeys. If you're working with `geotiff` library, this is result of `image.getGeoKeys()`.
  * @typedef {Object} module:geokeysToProj4.GeoKeys
  * @property {number} GeographicTypeGeoKey See GeoTIFF docs for more information
@@ -243,11 +254,8 @@ module.exports = {
 			proj += " +pm=" + (pm * units.GeogAngularUnitsGeoKey);
 
 		// To WGS key
-		if (geoKeys.GeogTOWGS84GeoKey) {
-			proj += " +towgs84=";
-			for (let param of geoKeys.GeogTOWGS84GeoKey)
-				proj += param + ",";
-		}
+		if (geoKeys.GeogTOWGS84GeoKey)
+			proj += " +towgs84=" + geoKeys.GeogTOWGS84GeoKey.join();
 
 		/////////////////////////
 		//         PCS         //
@@ -333,7 +341,7 @@ module.exports = {
 				proj += token;
 				let tokenValue = tokens[token];
 				if (tokenValue !== null)
-					proj += "=" + tokenValue
+					proj += "=" + toFixed(tokenValue);
 
 				proj += " ";
 				processedTokens[token] = true;
@@ -363,6 +371,9 @@ module.exports = {
 				y = m;
 			}
 		}
+
+		x = toFixed(x);
+		y = toFixed(y);
 
 		return {
 			proj4: proj,

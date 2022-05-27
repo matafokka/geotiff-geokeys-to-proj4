@@ -127,7 +127,7 @@ let testKeys = [
 		ProjLinearUnitsGeoKey: 9001,
 		ProjectedCSTypeGeoKey: 32767,
 		ProjectionGeoKey: 16032,
-		proj4: "+proj=tmerc +lat_0=0 +lon_0=9 +k_0=0.9996 +x_0=500000 +y_0=0 +a=6378137 +b=6356752.314140356 +towgs84=0,0,0, +no_defs"
+		proj4: "+proj=tmerc +lat_0=0 +lon_0=9 +k_0=0.9996 +x_0=500000 +y_0=0 +a=6378137 +b=6356752.314140356 +towgs84=0,0,0 +no_defs"
 	},
 ];
 
