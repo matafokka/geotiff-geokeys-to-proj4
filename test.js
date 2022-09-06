@@ -129,6 +129,15 @@ let testKeys = [
 		ProjectionGeoKey: 16032,
 		proj4: "+proj=tmerc +lat_0=0 +lon_0=9 +k_0=0.9996 +x_0=500000 +y_0=0 +a=6378137 +b=6356752.314140356 +towgs84=0,0,0 +no_defs"
 	},
+
+	{
+		name: "From #4",
+		GTModelTypeGeoKey: 1,
+		GTRasterTypeGeoKey: 1,
+		GeographicTypeGeoKey: 4326,
+		ProjectedCSTypeGeoKey: 32634,
+		proj4: "+proj=longlat +datum=WGS84 +no_defs"
+	}
 ];
 
 // Test runner

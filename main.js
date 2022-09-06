@@ -91,6 +91,7 @@ const toFixed = (n) => {
  * There're unspecified properties that named after geokeys with added `NotSupported` suffix, i.e. `ProjFalseOriginLongGeoKeyNotSupported`. Values are EPSG codes assigned to those keys. These errors means that specified EPSG code is either not supported by this library or are new and hasn't been added yet.
  *
  * @typedef {Object} module:geokeysToProj4.ConversionErrors
+ * @property {boolean} bothGCSAndPCSAreSet `true` When both `GeographicTypeGeoKey` and `ProjectedCSTypeGeoKey` geokeys are set. In this case, `GeographicTypeGeoKey` is used. This happens only if GeoTIFF has been specifically crafted to be faulty.
  * @property {number} CRSNotSupported Specified CRS can't be represented as Proj4 string or it's new and hasn't been added to this library. Value is EPSG code of specified CRS.
  * @property {number} GeogLinearUnitSizeGeoKeyNotDefined Geokey `GeogLinearUnitsGeoKey` is set to user-defined, but user hasn't specified `GeogLinearUnitSizeGeoKey`. In this case, every other key using this one assumed to be using meters. This happens only if GeoTIFF has been specifically crafted to be faulty.
  * @property {number} GeogAngularUnitSizeGeoKeyNotDefined Geokey `GeogAngularUnitsGeoKey` is set to user-defined, but user hasn't specified `GeogAngularUnitSizeGeoKey`. In this case, every other key using this one assumed to be using degrees. This happens only if GeoTIFF has been specifically crafted to be faulty.
@@ -151,6 +152,9 @@ module.exports = {
 		let proj = "", x = 1, y = 1, errors = {};
 
 		// First, get CRS, both geographic and projected
+		if (geoKeys.GeographicTypeGeoKey && geoKeys.ProjectedCSTypeGeoKey)
+			errors.bothGCSAndPCSAreSet = true;
+
 		let crsKey = geoKeys.GeographicTypeGeoKey || geoKeys.ProjectedCSTypeGeoKey;
 		if (crsKey) {
 			let crs = CRS[crsKey.toString()];

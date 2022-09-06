@@ -173,9 +173,13 @@ export interface GeoKeys {
  *
  * If an error has not occurred, it won't be present in this object.
  *
- * There're unspecified properties that named after geokeys with added `NotSupported` suffix, i.e. `ProjFalseOriginLongGeoKeyNotSupported`. Values are EPSG codes assigned to those keys. These errors means that specified EPSG code is either not supported by this library or are new and hasn't been added yet.
+ * There're unspecified properties that named after geokeys with added `NotSupported` suffix, i.e. `ProjFalseOriginLongGeoKeyNotSupported`. Values are EPSG codes assigned to those keys. These errors mean that specified EPSG code is either not supported by this library or are new and hasn't been added yet.
  */
 export interface ConversionErrors {
+	/**
+	 * `true` when both `GeographicTypeGeoKey` and `ProjectedCSTypeGeoKey` geokeys are set. In this case, `GeographicTypeGeoKey` is used. This happens only if GeoTIFF has been specifically crafted to be faulty.
+	 */
+	bothGCSAndPCSAreSet: boolean;
 	/**
 	 * Specified CRS can't be represented as Proj4 string or it's new and hasn't been added to this library. Value is EPSG code of specified CRS.
 	 */
