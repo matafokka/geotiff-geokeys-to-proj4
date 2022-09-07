@@ -82,20 +82,24 @@ const toFixed = (n) => {
  */
 
 /**
- * Errors that have occurred during converting geokeys. Since GeoTIFF supports EPSG codes that just can't be applied to an image. On top of that, it's possible to craft faulty GeoTIFF. So errors are unavoidable.
+ * Errors that have occurred during conversion.
  *
- * In most cases, you can just warn user that their file might be used wrongly. In specialized cases, it's your choice how to report those errors.
+ * Apart from listed properties, there's properties that named after geokeys with `NotSupported` suffix, i.e. `ProjFalseOriginLongGeoKeyNotSupported`. Values are EPSG codes assigned to those keys. These errors mean that the specified EPSG code is either not supported by this library, or it's new and hasn't been added yet. If it's the latter, please, create an issue at https://github.com/matafokka/geotiff-geokeys-to-proj4
  *
  * If an error has not occurred, it won't be present in this object.
  *
- * There're unspecified properties that named after geokeys with added `NotSupported` suffix, i.e. `ProjFalseOriginLongGeoKeyNotSupported`. Values are EPSG codes assigned to those keys. These errors means that specified EPSG code is either not supported by this library or are new and hasn't been added yet.
+ * How to process these errors:
+ *
+ * 1. If it's your program's user's GeoTIFF, show an error message.
+ * 1. If it's your GeoTIFF, fix it in a GIS.
+ * 1. If you're sure that file is fine or want to discuss it, please, create an issue at https://github.com/matafokka/geotiff-geokeys-to-proj4
  *
  * @typedef {Object} module:geokeysToProj4.ConversionErrors
- * @property {boolean} bothGCSAndPCSAreSet `true` When both `GeographicTypeGeoKey` and `ProjectedCSTypeGeoKey` geokeys are set. In this case, `GeographicTypeGeoKey` is used. This happens only if GeoTIFF has been specifically crafted to be faulty.
+ * @property {boolean} bothGCSAndPCSAreSet `true` When both `GeographicTypeGeoKey` and `ProjectedCSTypeGeoKey` geokeys are set. In this case, `GeographicTypeGeoKey` is used. The cause of this error is broken geokeys.
  * @property {number} CRSNotSupported Specified CRS can't be represented as Proj4 string or it's new and hasn't been added to this library. Value is EPSG code of specified CRS.
- * @property {number} GeogLinearUnitSizeGeoKeyNotDefined Geokey `GeogLinearUnitsGeoKey` is set to user-defined, but user hasn't specified `GeogLinearUnitSizeGeoKey`. In this case, every other key using this one assumed to be using meters. This happens only if GeoTIFF has been specifically crafted to be faulty.
- * @property {number} GeogAngularUnitSizeGeoKeyNotDefined Geokey `GeogAngularUnitsGeoKey` is set to user-defined, but user hasn't specified `GeogAngularUnitSizeGeoKey`. In this case, every other key using this one assumed to be using degrees. This happens only if GeoTIFF has been specifically crafted to be faulty.
- * @property {number} ProjLinearUnitSizeGeoKeyNotDefined Geokey `ProjLinearUnitsGeoKey` is set to user-defined, but user hasn't specified `ProjLinearUnitSizeGeoKey`. In this case, every other key using this one assumed to be using meters. This happens only if GeoTIFF has been specifically crafted to be faulty.
+ * @property {number} GeogLinearUnitSizeGeoKeyNotDefined Geokey `GeogLinearUnitsGeoKey` is set to user-defined, but user hasn't specified `GeogLinearUnitSizeGeoKey`. In this case, every other key using this one assumed to be using meters. The cause of this error is broken geokeys.
+ * @property {number} GeogAngularUnitSizeGeoKeyNotDefined Geokey `GeogAngularUnitsGeoKey` is set to user-defined, but user hasn't specified `GeogAngularUnitSizeGeoKey`. In this case, every other key using this one assumed to be using degrees. The cause of this error is broken geokeys.
+ * @property {number} ProjLinearUnitSizeGeoKeyNotDefined Geokey `ProjLinearUnitsGeoKey` is set to user-defined, but user hasn't specified `ProjLinearUnitSizeGeoKey`. In this case, every other key using this one assumed to be using meters. The cause of this error is broken geokeys.
  * @property {number} conversionNotSupported Conversion specified in `ProjectionGeoKey` is not supported by this library. Value is EPSG conversion code.
  * @property {number} coordinateTransformationNotSupported Transformation specified in `ProjCoordTransGeoKey` is not supported by this library. Value is projection code. See http://geotiff.maptools.org/spec/geotiff6.html#6.3.3.3 for more information.
  */
