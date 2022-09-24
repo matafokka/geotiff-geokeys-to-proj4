@@ -25,15 +25,15 @@ Still, be sure to check out usage example below!
 
 In **Node.js** or with **bundler**: `const geokeysToProj4 = require("geotiff-geokeys-to-proj4");`
 
-In **TypeScript**: `import * as geokeysToProj4 from "geotiff-geokeys-to-proj4";`
+In **TypeScript**: `import geokeysToProj4 from "geotiff-geokeys-to-proj4";`
 
 In a **browser**: `<script src="path/to/main-dist.js"></script>` - after that you'll have `geokeysToProj4` global variable.
 
 With **webpack**:
 
-Webpack displays a warning `Critical dependency: require function is used in a way in which dependencies cannot be statically extracted` when trying to `import * as geokeysToProj4 from "geotiff-geokeys-to-proj4"`.
+Webpack displays a warning `Critical dependency: require function is used in a way in which dependencies cannot be statically extracted` when trying to `import geokeysToProj4 from "geotiff-geokeys-to-proj4"`.
 
-To remove this warning, import this library like so: `import geokeys from "geotiff-geokeys-to-proj4/main.js";`.
+To remove this warning, import this library like so: `import geokeysToProj4 from "geotiff-geokeys-to-proj4/main.js";`.
 
 By doing so, you'll import the source entry point, and webpack will compile this library for you without any warnings.
 
