@@ -28,6 +28,9 @@ forEach(`
 			d.prime_meridian_code IS NOT NULL OR
 			member_data.prime_meridian_code IS NOT NULL
 		)
+	-- Get newest ensemble datums realizations first
+	ORDER BY member.datum_sequence DESC
+
 `, (result) => {
 	const id = result.id + "";
 
