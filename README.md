@@ -1,7 +1,7 @@
 # geotiff-geokeys-to-proj4
 
 This library converts GeoTIFF's geokeys to Proj4 string, so you can [consume](#why-do-i-need-it) your images.
- 
+
 Intended to be used with [geotiff.js](https://github.com/geotiffjs/geotiff.js/) and [proj4js](https://github.com/proj4js/proj4js), it's basically a glue between these libraries, but it can be used with alternatives.
 
 Designed for both frontend and backend. Supports ES3+ environments *(any browser from 2000 year)*. Size is ~1 Mb *(despite what npm says, it counts both sources and bundle)*.
@@ -17,7 +17,7 @@ EPSG updates their database once in a month, these updates needs to be integrate
 
 [GeoTIFF 3D DEM Viewer](https://matafokka.github.io/geotiff-3d-dem-viewer) demonstrates how to read GeoTIFF files and display them in [CesiumJS](https://cesium.com/) as 3D terrain. Check the [source code](https://github.com/matafokka/geotiff-3d-dem-viewer) for more. Files that'll interest you the most: [initial image setup](https://github.com/matafokka/geotiff-3d-dem-viewer/blob/master/src/components/Menu.tsx), [where all interesting stuff is](https://github.com/matafokka/geotiff-3d-dem-viewer/blob/master/src/etc/GeoTIFFManager.ts).
 
-Still, be sure to check out usage example below! 
+Still, be sure to check out usage example below!
 
 # Usage
 
@@ -133,25 +133,20 @@ async function workWithGeoTIFF(blob) {
 
 # Known issues
 
-Only like a third of EPSG datums is mapped to +towgs transforms. Other datums are fine to use, but you'll lose some degree of precision.
-
 I don't know which geokeys should take precedence over which. I did what seems to be logical, but I might be wrong. If you know anything about it, please, create an issue and describe whether I'm wrong (and how to fix it) or right (so I'll remove this text).
 
 # Manually updating from EPSG database
-
-This section is intended for the maintainers, but since there're no maintainers for now, it might be useful for the regular users.
 
 Unfortunately, [epsg.org](https://epsg.org) doesn't provide public access to their database. You need to register an account, and only then you'll be able to download database. Since all of that is for the users and not for bots, both client and server might change in the future, so there's no point in writing self-update script.
 
 To update:
 
-1. Clone this repo *(or navigate to `node_modules` if you want to use it from there, though, you'll lose all changes when you'll run `npm install` on your project).*
+1. Clone this repo.
 1. Run `npm install` on cloned repo.
 1. Set up [PostgreSQL](https://www.postgresql.org/) server *(other RDBMS are not supported)*. Default configuration should be fine, just create a user and a database for that user.
 1. Head over to [here](https://epsg.org/download-dataset.html), create an account (if you don't have one) and download PostgreSQL scripts.
 1. Extract downloaded scripts to `postgres_prep` directory.
-1. Run `npm run update-all` to update everything and rebuilds the project. See arguments below. **Warning: this script utilises `epsg` schema and will erase it completely! It's hardcoded and can't be changed.** To avoid data loss, create a separate database solely to run this script.
-1. **For maintainers:** commit the whole project to the GitHub and create a pull request.
+1. Run `npm run update-all` to update everything and rebuilds the project. See arguments below. **Warning: this script utilizes `epsg` schema and will erase it completely! It's hardcoded and can't be changed.** To avoid data loss, create a separate database solely to run this script.
 
 There're actually two scripts: `update-all` which has been described above and `update-existing` which will update project files from existing database. Both of these scripts accepts following arguments:
 
@@ -169,7 +164,7 @@ Arguments passed to npm scripts in following manner: `npm run [script name] -- [
 
 ## Why do I need it?
 
-Every GeoTIFF is bound to some kind of Coordinate Reference System (CRS) which in combintaion with georeferencing data defines where pixel coordinates are on the Earth. These CRS are quite different from what you can find, let's say, in Leaflet or OpenLayers which uses WGS *(which is CRS too)* by default.
+Every GeoTIFF is bound to some kind of Coordinate Reference System (CRS) which in combination with georeferencing data defines where pixel coordinates are on the Earth. These CRS are quite different from what you can find, let's say, in Leaflet or OpenLayers which uses WGS *(which is CRS too)* by default.
 
 So you need to convert image coordinates from one CRS to another. [proj4js](https://github.com/proj4js/proj4js) is the best tool to do that. You need to supply an input and output CRS *(which Proj4 calls a projection; yes, terminology is quite confusing)* to it in form of a string.
 
@@ -181,7 +176,7 @@ Without these procedures, you'll get wrong results.
 
 ## How is it different from [epsg-index](https://github.com/derhuerst/epsg-index)?
 
-epsg-index only provides projections definitions, GeoTIFF uses more than that. Actually, this library uses epsg-index under-the-hood!
+epsg-index only provides projections definitions, GeoTIFF uses more than that.
 
 ## How does it compare to already existing and battle-proven libraries such as GDAL?
 
@@ -211,9 +206,15 @@ This library only maps geokeys to their Proj4 definitions and builds a final Pro
 
 If you've encountered a bug, please, take a look at Proj4 string first and compare it to one generated by a professional GIS. If something is fundamentally wrong, it's the issue of this library. Otherwise, there's something wrong with Proj4.
 
+If you're comparing results with what [epsg.io](https://epsg.io) says, note that while [epsg.io](https://epsg.io) is mostly right, it's not an official data source. For example, [epsg.io](https://epsg.io) maps CRS `21780` to `+proj=somerc`, but the right projection seems to be `+proj=omerc`. If you're not sure how to verify which Proj4 string is correct, feel free to message me anyway.
+
 Please, don't report redundant parameters *(for example, `+a` and `+b` that are the same as `+ellps` provides)* as a bug. This behavior simplifies development, increases performance by not making useless comparisons and ensures that the right parameters are used.
 
 Missing `+units` is also not a bug, you're converting coordinates to meters by using `geokeysToProj4.convertCoordinates()`.
+
+## What are the sources for Proj4 strings?
+
+Official database from epsg.org is the main data source. Data is enriched by some [additional sources](EPSG/data/AdditionalCRS.js). [epsg.io](https://epsg.io) is used to selectively check if Proj4 strings are correct.
 
 # Contributing
 
@@ -223,6 +224,6 @@ You can contribute by solving [described issues](#known-issues) or by [maintaini
 
 1. [geotiff.js](https://github.com/geotiffjs/geotiff.js/) is a library that can read GeoTIFF images.
 1. [proj4js](https://github.com/proj4js/proj4js) is a port of Proj4 to JS.
-1. [epsg-index](https://github.com/derhuerst/epsg-index) is a machine-readable index of all EPSG coordinate systems, used by this library.
-1. [epsg.io](https://epsg.io) is a website that provides all the EPSG stuff mostly in human-readable form, and an API to access it. Used by this library with [epsg-index](https://github.com/derhuerst/epsg-index) to grab projections definitions.
-1. [geokeys-to-proj4js](https://github.com/GeoTIFF/geokeys-to-proj4js) is a project with the same goal but far from to be finished, and looks abandoned.
+1. [epsg-index](https://github.com/derhuerst/epsg-index) is a machine-readable index of all EPSG coordinate reference systems.
+1. [epsg.io](https://epsg.io) is a website that provides all the EPSG stuff mostly in human-readable form, and an API to access it.
+1. [geokeys-to-proj4js](https://github.com/GeoTIFF/geokeys-to-proj4js) is a project with the same goal but far from to be finished, and it looks abandoned.

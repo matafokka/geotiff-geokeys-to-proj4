@@ -12,6 +12,7 @@ module.exports = {
 	"9818": "poly",
 	"9815": "omerc",
 	"9808": "tmerc +k_0=1",
+	"1111": "tmerc +k_0=1",
 	"1024": "merc",
 	"9841": "merc +ellps=sphere",
 	"9835": "cea",
@@ -43,4 +44,7 @@ module.exports = {
 	"9813": "labrd",
 	"9604": "molodensky",
 	"9605": "molodensky +abridged",
+	"9831": "aeqd +guam",
+	"1041": "krovak +lat_0=49.5 +alpha=30.2881397527778 +k=0.9999",
+	"9803": "lcc",
 }

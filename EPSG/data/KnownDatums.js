@@ -73,7 +73,7 @@ module.exports = {
 	"1118": "0,0,0", // NAD83
 	"1117": "0,0,0", // NAD83
 	"1116": "0,0,0", // NAD83
-	"6135": "61,-285 -181", // OldHawaiian
+	"6135": "61,-285,-181", // OldHawaiian
 	"1147": "-346,-1,224", // Oman
 	"5101": "375,-111,431", // Ordnance Datum Newlyn
 	"1164": "375,-111,431", // Ordnance Datum Newlyn (Offshore)

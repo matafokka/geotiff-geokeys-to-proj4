@@ -1,5 +1,5 @@
 
-// WARNING: This file has been generated automatically by querying epsg.io
+// WARNING: This file has been generated automatically
 
 /**
 * Maps EPSG ellipsoids to their data. Proj4 parameter is "+ellps".

@@ -1,4 +1,4 @@
-/* This script generates datums from epsg.io. Can be used standalone or in a worker. */
+/* This script generates datums. Can be used standalone or in a worker. */
 
 const KnownDatums = require("./data/KnownDatums.js");
 const meridians = require("./data/GeogPrimeMeridianGeoKey.js");

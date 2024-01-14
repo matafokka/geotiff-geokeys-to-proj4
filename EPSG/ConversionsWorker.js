@@ -1,4 +1,4 @@
-/* This script generates conversions (used by GeoTIFF as ProjectionGeoKey) from epsg.io. Can be used standalone or in a worker. */
+/* This script generates conversions (used by GeoTIFF as ProjectionGeoKey). Can be used standalone or in a worker. */
 
 const methods = require("./data/Methods.js")
 const parameters = require("./data/MethodParameters.js");
@@ -29,7 +29,7 @@ forEach(`
 
 		if (uomCode in Units) {
 			let {m} = Units[uomCode];
-			if (paramDef.includes("lat") || paramDef.includes("lon"))
+			if (paramDef.includes("lat") || paramDef.includes("lon") || paramDef.includes("alpha") || paramDef.includes("gamma"))
 				m *= 180 / Math.PI; // Radians are angular base units
 			value *= m;
 		} else

@@ -23,15 +23,33 @@ module.exports = function (value, code) {
 	if (codeStr in Units)
 		return value * Units[codeStr].m * 180 / Math.PI;
 
-	// Messed up shit
+	// Messed up shit. Remark from the database:
+	// Pseudo unit. Format: signed degrees - period - minutes (2 digits) - integer seconds (2 digits) - fraction of seconds (any precision). Must include leading zero in minutes and seconds and exclude decimal point for seconds. Convert to deg using algorithm.
 	if (code === 9110) {
 		let valStr = value.toString();
 		let ptPos = valStr.indexOf(".");
-		let sign = Math.sign(value);
-		let deg = parseFloat(valStr.substring(0, ptPos)) || 0;
-		let min = parseFloat(valStr.substring(ptPos + 1, ptPos + 3)) || 0;
-		let sec = parseFloat(valStr.substring(ptPos + 3)) || 0;
-		return deg + sign * min / 60 + sign * sec / 3600;
+
+		// Add point and zeroes to normalize
+		if (ptPos === -1) {
+			ptPos = valStr.length;
+			valStr += ".0000";
+		}
+
+		// Add missing zeroes to normalize
+		const lengthAfterPoint = valStr.length - 1 - ptPos;
+		if (lengthAfterPoint < 4) {
+			for (let i = 0; i < 4 - lengthAfterPoint; i++)
+				valStr += "0";
+		}
+
+		// Parse parts
+		const sign = Math.sign(value);
+		const deg = Math.abs(parseFloat(valStr.substring(0, ptPos)));
+		const min = parseFloat(valStr.substring(ptPos + 1, ptPos + 3));
+		let secStr = valStr.substring(ptPos + 3);
+		secStr = secStr ? secStr.substring(0, 2) + "." + secStr.substring(2) : "";
+		const sec = parseFloat(secStr || 0);
+		return sign * (deg + min / 60 + sec / 3600);
 	}
 
 	// Hemisphere degree

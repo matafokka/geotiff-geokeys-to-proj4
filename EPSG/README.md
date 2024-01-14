@@ -1,6 +1,6 @@
 # Meta
 
-This directory contains scripts that fetch EPSG entries from epsg.io. Scripts can be ran both standalone or in a web worker.
+This directory contains scripts that will fetch data from EPSG database. Scripts can be ran both standalone or in a web worker.
 
 To run all scripts, run `npm run-script update-existing` script. To see help on arguments, run `npm run-script update-existing -- -h` *(**note:** when running npm scripts, arguments should always be separated from the script name by `--`)*.
 

@@ -10,8 +10,9 @@ const clientFactory = require("./PostgresClientFactory.js");
  * @param callback {function(Object, Object)} A callback. First argument accepts current record and second - current object which will be written to the specified file.
  * @param filename {string} Name of the file without ".js' extension to write to
  * @param comment {string} Comment to append to the file
+ * @param afterAll {(obj: Object) => void} Called after all entries has been processed
  */
-module.exports = async function (query, callback, filename, comment = "") {
+module.exports = async function (query, callback, filename, comment = "", afterAll = undefined) {
 	let client = await clientFactory();
 	let object = {};
 	client.query(query, async (err, res) => {
@@ -29,10 +30,13 @@ module.exports = async function (query, callback, filename, comment = "") {
 				object[result.id] = v;
 		}
 
+		if (afterAll)
+			await afterAll(object);
+
 		client.end();
 
 		fs.writeFileSync(`EPSG/data/${filename}.js`, `
-// WARNING: This file has been generated automatically by querying epsg.io
+// WARNING: This file has been generated automatically
 
 ${comment}
 module.exports = ${JSON.stringify(object)}`);

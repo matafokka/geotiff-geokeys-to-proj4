@@ -1,5 +1,5 @@
 
-// WARNING: This file has been generated automatically by querying epsg.io
+// WARNING: This file has been generated automatically
 
 /**
 * Maps EPSG units to their multipliers to convert to meters (or standard base values, see below). Proj4 parameter is "+to_meter".

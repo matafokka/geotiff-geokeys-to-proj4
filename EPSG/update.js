@@ -1,6 +1,6 @@
 if (process.argv.indexOf("-h") !== -1 || process.argv.indexOf("--help") !== -1) {
 	console.log(`
-This script generates data from EPSG database and epsg.io.
+This script generates data from EPSG database.
 
 How to generate data:
 	1. Set up PostgreSQL. This script doesn't support other databases.
@@ -55,7 +55,7 @@ function fetchBasicEntities() {
 
 // Fetch all other entities. Each next entity depends on previous one.
 async function fetchOtherEntities() {
-	let files = ["DatumsWorker", "EllipsoidalCSWorker", "CRSWorker"];
+	let files = ["DatumsWorker", "CRSWorker"];
 	for (let file of files) {
 		await new Promise(resolve => {
 			let w = new Worker(`${baseDir + file}.js`, options);
