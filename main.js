@@ -40,6 +40,8 @@ const tokensOrder = ["+proj", "+lat_0", "+lon_0", "+lat_1", "+lat_ts", "+lon_1",
 
 /**
  * Parses given argument as float and returns its fixed value
+ *
+ * @ignore
  * @param n {*} Number to fix
  * @returns {number|*} Fixed number or original value if it can't be parsed as float
  */
@@ -131,7 +133,7 @@ const toFixed = (n) => {
 
 /**
  * Parameters to pass to {@link module:geokeysToProj4.convertCoordinates} or to convert coordinates manually
- * @typedef {Object} CoordinateConversionParameters
+ * @typedef {Object} module:geokeysToProj4.CoordinateConversionParameters
  * @property {number} x Multiply X coordinate by this parameter to convert it to standard units (meters or degrees)
  * @property {number} y Multiply Y coordinate by this parameter to convert it to standard units (meters or degrees)
  * @property {number} z Multiply Z coordinate (pixel value) by this parameter to convert it to standard units (meters)
