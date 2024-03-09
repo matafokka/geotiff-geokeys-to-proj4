@@ -2,3 +2,15 @@ docs
 postgres_prep/*.sql
 postgres_prep/*.txt
 node_modules
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.vscode
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+*.iml
