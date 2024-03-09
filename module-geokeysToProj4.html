@@ -37,13 +37,6 @@
 				</ul>
 			</li>
 			
-			<li class="dropdown">
-				<a href="global.html" class="dropdown-toggle" data-toggle="dropdown">Global<b class="caret"></b></a>
-				<ul class="dropdown-menu inline">
-					<li><a href="global.html#toFixed">toFixed</a></li>
-				</ul>
-			</li>
-			
 		</ul>
         
             <div class="col-sm-3 col-md-3">
@@ -93,10 +86,10 @@
 <ol>
 <li>Read geokeys.</li>
 <li>Pass them to <code>geokeysToProj4.toProj4()</code> (let's call returned object <code>projObj</code>).</li>
-<li>Pass <code>projObj.proj4</code> (which is Proj4 string) to proj4js.</li>
+<li>Pass <code>projObj.proj4</code> (Proj4 string) to proj4js.</li>
 <li>Convert pixel coordinates to CRS coordinates (let's call them <code>crsX</code> and <code>crsY</code>).</li>
 <li>Convert CRS coordinates to usable units <em>(in most cases, meters, but GeoTIFF allows speed, angular speed, and scale)</em>: <code>geokeysToProj4(crsX, crsY, projObj.coordinatesConversionParameters)</code>.</li>
-<li>The returned object will contain x and y coordinates which are ready to be projected with proj4js. So project them.</li>
+<li>The returned object contains X, Y, Z coordinates. which are ready to be projected with proj4js. So project them.</li>
 </ol>
 <p>Of course, you can alter this workflow to use this library with any other (presumably, server-side) software.</p></div>
         
@@ -164,7 +157,7 @@
             
 <hr>
 <dt>
-    <h4 class="name" id=".convertCoordinates"><span class="type-signature">&lt;static> </span>convertCoordinates(x, y, parameters)</h4>
+    <h4 class="name" id=".convertCoordinates"><span class="type-signature">&lt;static> </span>convertCoordinates(x, y, z, parameters)</h4>
     
     
 </dt>
@@ -173,7 +166,7 @@
     
     <div class="description">
         <p>Converts given coordinates to standard ones (i.e. meters or degrees).</p>
-<p>Basically, a short way to multiply x and y by <code>parameters.x</code> and <code>parameters.y</code> respectively.</p>
+<p>Basically, a short way to multiply <code>x, y, z</code> by <code>parameters.x</code>, <code>parameters.y</code> and <code>parameters.z</code> respectively.</p>
 <p>It does NOT accept image coordinates! Convert image coordinates to projection coordinates first (by multiplying image coordinates by <code>image.getResolution()</code> and adding coordinates of a top left corner) and then pass converted coordinates to this function.</p>
     </div>
     
@@ -251,6 +244,30 @@
             
 
             <td class="description last"><p>Y coordinate</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>z</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Pixel value, i.e. Z coordinate. If you don't use DEM, pass any number.</p></td>
         </tr>
 
     
@@ -603,7 +620,7 @@
 
             
 
-            <td class="description last"><p><code>true</code> When both <code>GeographicTypeGeoKey</code> and <code>ProjectedCSTypeGeoKey</code> geokeys are set. In this case, <code>GeographicTypeGeoKey</code> is used. The cause of this error is broken geokeys.</p></td>
+            <td class="description last"><p><code>true</code> When both <code>GeodeticCRSGeoKey</code> (or <code>GeographicTypeGeoKey</code>) and <code>ProjectedCRSGeoKey</code> (or <code>ProjectedCSTypeGeoKey</code>) geokeys are set. In this case, <code>GeographicTypeGeoKey</code> is used. The cause of this error is broken geokeys.</p></td>
         </tr>
 
     
@@ -747,7 +764,251 @@
 
             
 
-            <td class="description last"><p>Transformation specified in <code>ProjCoordTransGeoKey</code> is not supported by this library. Value is projection code. See http://geotiff.maptools.org/spec/geotiff6.html#6.3.3.3 for more information.</p></td>
+            <td class="description last"><p>Transformation specified in <code>ProjMethodGeoKey</code> (or <code>ProjCoordTransGeoKey</code>) is not supported by this library. Value is projection code. See http://geotiff.maptools.org/spec/geotiff6.html#6.3.3.3 for more information.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>verticalCsNotSupported</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Vertical CS specified in <code>VerticalGeoKey</code> (or <code>VerticalCSTypeGeoKey</code>) is not supported by this library. Value is EPSG CS code.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>verticalCsUnitsNotSupported</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Vertical CS specified in <code>VerticalUnitsGeoKey</code> is not supported by this library. Value is EPSG uom code.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>verticalDatumsNotSupported</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Vertical datums are not supported by this library. If vertical CRS is user-defined, and <code>VerticalDatumGeoKey</code> is set, this error will be reported. Value is EPSG datum code.</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+</dl>
+
+    
+
+	
+
+	
+
+	
+
+    
+
+    
+
+    
+
+    
+
+	
+
+	
+
+	
+
+	
+
+	
+
+
+
+	
+
+	
+
+	
+
+	
+</dl>
+
+
+    
+</dd>
+
+            
+                
+<hr>
+<dt class="name" id=".CoordinateConversionParameters">
+    <h4 id=".CoordinateConversionParameters">CoordinateConversionParameters</h4>
+
+    
+</dt>
+<dd>
+    
+    <div class="description">
+        <p>Parameters to pass to <a href="module-geokeysToProj4.html#.convertCoordinates"><code>module:geokeysToProj4.convertCoordinates</code></a> or to convert coordinates manually</p>
+    </div>
+    
+
+    
+        <h5>Type:</h5>
+        <ul>
+            <li>
+                
+<span class="param-type">Object</span>
+
+
+
+            </li>
+        </ul>
+    
+
+    
+<dl class="details">
+    
+
+    <h5 class="subsection-title">Properties:</h5>
+
+    <dl>
+
+<table class="props table table-striped">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>x</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Multiply X coordinate by this parameter to convert it to standard units (meters or degrees)</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>y</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Multiply Y coordinate by this parameter to convert it to standard units (meters or degrees)</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>z</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Multiply Z coordinate (pixel value) by this parameter to convert it to standard units (meters)</p></td>
         </tr>
 
     
@@ -854,6 +1115,30 @@
 
         <tr>
             
+                <td class="name"><code>GeodeticCRSGeoKey</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>See GeoTIFF docs for more information</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
                 <td class="name"><code>GeographicTypeGeoKey</code></td>
             
 
@@ -878,7 +1163,55 @@
 
         <tr>
             
+                <td class="name"><code>GeodeticDatumGeoKey</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>See GeoTIFF docs for more information</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
                 <td class="name"><code>GeogGeodeticDatumGeoKey</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>See GeoTIFF docs for more information</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>PrimeMeridianGeoKey</code></td>
             
 
             <td class="type">
@@ -1046,7 +1379,55 @@
 
         <tr>
             
+                <td class="name"><code>EllipsoidSemiMajorAxisGeoKey</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>See GeoTIFF docs for more information</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
                 <td class="name"><code>GeogSemiMajorAxisGeoKey</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>See GeoTIFF docs for more information</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>EllipsoidSemiMinorAxisGeoKey</code></td>
             
 
             <td class="type">
@@ -1094,6 +1475,30 @@
 
         <tr>
             
+                <td class="name"><code>EllipsoidInvFlatteningGeoKey</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>See GeoTIFF docs for more information</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
                 <td class="name"><code>GeogInvFlatteningGeoKey</code></td>
             
 
@@ -1118,7 +1523,79 @@
 
         <tr>
             
+                <td class="name"><code>PrimeMeridianLongitudeGeoKey</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>See GeoTIFF docs for more information</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>PrimeMeridianLongitudeGeoKey</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>See GeoTIFF docs for more information</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
                 <td class="name"><code>GeogPrimeMeridianLongGeoKey</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>See GeoTIFF docs for more information</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>ProjectedCRSGeoKey</code></td>
             
 
             <td class="type">
@@ -1167,6 +1644,30 @@
         <tr>
             
                 <td class="name"><code>ProjectionGeoKey</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>See GeoTIFF docs for more information</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>ProjMethodGeoKey</code></td>
             
 
             <td class="type">
@@ -1694,6 +2195,78 @@
 
         <tr>
             
+                <td class="name"><code>VerticalGeoKey</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>See GeoTIFF docs for more information</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>VerticalCSTypeGeoKey</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>See GeoTIFF docs for more information</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>VerticalUnitsGeoKey</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>See GeoTIFF docs for more information</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
                 <td class="name"><code>GeogTOWGS84GeoKey</code></td>
             
 
@@ -1863,6 +2436,30 @@
         </tr>
 
     
+
+        <tr>
+            
+                <td class="name"><code>z</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Z coordinate (coordinate of a third axis of CRS) of a point, i.e. transformed pixel value. Always points up.</p></td>
+        </tr>
+
+    
     </tbody>
 </table>
 </dl>
@@ -2020,7 +2617,7 @@
             <td class="type">
             
                 
-<span class="param-type"><a href="global.html#CoordinateConversionParameters">CoordinateConversionParameters</a></span>
+<span class="param-type">CoordinateConversionParameters</span>
 
 
 
@@ -2100,7 +2697,7 @@
 
             
 
-            <td class="description last"><p>If set to true, GCS is used. Otherwise, PCS is used.</p></td>
+            <td class="description last"><p>If <code>true</code>, geographic (either 2D or 3D) CRS is used.</p></td>
         </tr>
 
     
@@ -2223,7 +2820,7 @@
 <span class="jsdoc-message">
 	Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.7</a>
 	
-		on 2022-09-24T14:50:53+03:00
+		on 2024-03-09T10:31:21+00:00
 	
 	using the <a href="https://github.com/docstrap/docstrap">DocStrap template</a>.
 </span>

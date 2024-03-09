@@ -37,13 +37,6 @@
 				</ul>
 			</li>
 			
-			<li class="dropdown">
-				<a href="global.html" class="dropdown-toggle" data-toggle="dropdown">Global<b class="caret"></b></a>
-				<ul class="dropdown-menu inline">
-					<li><a href="global.html#toFixed">toFixed</a></li>
-				</ul>
-			</li>
-			
 		</ul>
         
             <div class="col-sm-3 col-md-3">
@@ -128,9 +121,9 @@
 <li>Read geokeys.</li>
 <li>Pass them to <code>geokeysToProj4.toProj4()</code> (let's call returned object <code>projObj</code>).</li>
 <li>Pass <code>projObj.proj4</code> (which is Proj4 string) to proj4js.</li>
-<li>Convert pixel coordinates to CRS coordinates (let's call them <code>crsX</code> and <code>crsY</code>).</li>
-<li>Convert CRS coordinates to usable units <em>(in most cases, meters, but GeoTIFF allows speed, angular speed, and scale)</em>: <code>geokeysToProj4(crsX, crsY, projObj.coordinatesConversionParameters)</code>.</li>
-<li>The returned object will contain x and y coordinates which are ready to be projected with proj4js. So project them.</li>
+<li>Convert pixel coordinates and pixel value <em>(Z coordinate; DEM or geocentric CRS only; for other files, use any number, it doesn't matter)</em> to CRS coordinates (let's call them <code>crsX</code>, <code>crsY</code> and <code>crsZ</code>).</li>
+<li>Convert CRS coordinates to usable units <em>(in most cases, meters or degrees, but GeoTIFF allows speed, angular speed, and scale)</em>: <code>geokeysToProj4(crsX, crsY, crsZ, projObj.coordinatesConversionParameters)</code>.</li>
+<li>The returned object will contain <code>x, y, z</code> coordinates which are ready to be projected with proj4js. So project them.</li>
 </ol>
 <p>Of course, you can alter this workflow to use this library with any other (presumably, server-side) software.</p>
 <p>Let's demonstrate everything from start to finish on an example with <a href="https://github.com/geotiffjs/geotiff.js/">geotiff.js</a> and <a href="https://github.com/proj4js/proj4js">proj4js</a>:</p>
@@ -142,16 +135,16 @@ const geokeysToProj4 = require(&quot;geotiff-geokeys-to-proj4&quot;); // This li
 // Let's wrap our example in a function
 async function workWithGeoTIFF(blob) {
     // Read image. See geotiff.js docs on what all of that means.
-    let tiff = await geotiff.fromBlob(blob); // Read blob
-    let imageCount = await tiff.getImageCount(); // Get image count
+    const tiff = await geotiff.fromBlob(blob); // Read blob
+    const imageCount = await tiff.getImageCount(); // Get image count
 
     // Work with each image in a file
     for (let i = 0; i &lt; imageCount; i++) {
-        let image = await tiff.getImage(i); // Get image instance
-        let geoKeys = image.getGeoKeys(); // Get geokeys
-        let projObj = geokeysToProj4.toProj4(geoKeys); // Convert geokeys to proj4 string
+        const image = await tiff.getImage(i); // Get image instance
+        const geoKeys = image.getGeoKeys(); // Get geokeys
+        const projObj = geokeysToProj4.toProj4(geoKeys); // Convert geokeys to proj4 string
         // The function above returns an object where proj4 property is a Proj4 string and coordinatesConversionParameters is conversion parameters which we'll use later
-        let projection = proj4(projObj.proj4, &quot;WGS84&quot;); // Project our GeoTIFF to WGS84
+        const projection = proj4(projObj.proj4, &quot;WGS84&quot;); // Project our GeoTIFF to WGS84
 
         // Now you may want to deal with errors. Unfortunately, errors are unavoidable, but in most cases, you can warn the user or just continue on.
         // All occurred errors will be in projObj.errors object. See the docs for more information:
@@ -159,15 +152,17 @@ async function workWithGeoTIFF(blob) {
 
         // Work with pixels
         // For looping over pixels
-        const width = image.getWidth(), height = image.getHeight(),
+        const width = image.getWidth();
+        const height = image.getHeight();
         // Pixel dimensions for converting image coordinates to source CRS coordinates
-        [originX, originY] = image.getOrigin(), [xSize, ySize] = image.getResolution();
+        const [originX, originY] = image.getOrigin();
+        const [xSize, ySize] = image.getResolution();
 
         // Read rows
         for (let y = 0; y &lt; height; y++) {
             // Read one row of pixels. Easier to deal with coordinates, takes less RAM.
-            let raster = await image.readRasters({window: [0, y, width, y + 1]});
-            let color0 = raster[0]; // Raster is a TypedArray where elements are colors and their elements are pixel values of that color
+            const raster = await image.readRasters({window: [0, y, width, y + 1]});
+            const color0 = raster[0]; // Raster is a TypedArray where elements are colors and their elements are pixel values of that color
 
             // Read columns. Since we're reading full row, we can replace color0.length with width, but I find color0.length more explicit.
             for (let x = 0; i &lt; color0.length; x++) {
@@ -177,20 +172,28 @@ async function workWithGeoTIFF(blob) {
                 // 2. Adding this value to top-left corner coordinates which will result in &quot;global&quot; coordinates in CRS units.
                 // This will work because image is transformed by Affine Transformation which preserves parallelism.
                 // Warning: this logic works only for source CRS, target CRS might screw up parallel lines, so pixel dimensions will not be constant!
-                let crsX = originX + x * xSize, crsY = originY + y * ySize;
+                const crsX = originX + x * xSize;
+                const crsY = originY + y * ySize;
 
-                // Check if coordinates are already in meters (or other &quot;standard&quot; units). If not, convert them.
-                // You can remove the condition, if you consider it as premature optimisation, convertCoordinates() will work just fine in any case.
+                // DEM or geocentric CRS only: Z coordinate is pixel value. You may want to use another band or a combination of bands as Z coordinate.
+                // For other files, you may use any number instead, it doesn't matter.
+                const crsZ = color0[i];
+
+                // Check if coordinates are already in meters (or other &quot;standard&quot; units). If not, convert them. Either:
+
+                // 1. Use convertCoordinates():
                 let point;
-                if (projObj.shouldConvertCoordinates)
-                    point = geokeysToProj4.convertCoordinates(crsX, crsY, projObj.coordinatesConversionParameters);
-                else
-                    point = {x: crsX, y: crsY};
 
-                // Or just multiply manually to speed up execution by removing function calls:
+                if (projObj.shouldConvertCoordinates) // You can remove this condition, convertCoordinates() will work just fine in any case. Just a bit of time saving when dealing with large files.
+                    point = geokeysToProj4.convertCoordinates(crsX, crsY, crsZ, projObj.coordinatesConversionParameters);
+                else
+                    point = { x: crsX, y: crsY, z: crsZ };
+
+                // 2. Just multiply manually to speed up execution by removing function calls and conditions:
                 point = {
                     x: crsX * projObj.coordinatesConversionParameters.x,
                     y: crsY * projObj.coordinatesConversionParameters.y,
+                    z: crsZ * projObj.coordinatesConversionParameters.z,
                 }
 
                 let projectedPoint = projection.forward(point); // Project these coordinates
@@ -201,20 +204,23 @@ async function workWithGeoTIFF(blob) {
 }
 </code></pre>
 <h1>Known issues</h1>
-<p>Only like a third of EPSG datums is mapped to +towgs transforms. Other datums are fine to use, but you'll lose some degree of precision.</p>
 <p>I don't know which geokeys should take precedence over which. I did what seems to be logical, but I might be wrong. If you know anything about it, please, create an issue and describe whether I'm wrong (and how to fix it) or right (so I'll remove this text).</p>
+<p>Vertical CRS which use local depth are not supported because reference points are needed. Following has been excluded:</p>
+<ol>
+<li>Vertical CS: 1049 and 1050.</li>
+<li>Vertical CRS: 8378 and 8897.</li>
+</ol>
+<p>Vertical datums are not supported at all because mappings are needed. If you have at least some mappings, please, let me know by creating an issue.</p>
 <h1>Manually updating from EPSG database</h1>
-<p>This section is intended for the maintainers, but since there're no maintainers for now, it might be useful for the regular users.</p>
 <p>Unfortunately, <a href="https://epsg.org">epsg.org</a> doesn't provide public access to their database. You need to register an account, and only then you'll be able to download database. Since all of that is for the users and not for bots, both client and server might change in the future, so there's no point in writing self-update script.</p>
 <p>To update:</p>
 <ol>
-<li>Clone this repo <em>(or navigate to <code>node_modules</code> if you want to use it from there, though, you'll lose all changes when you'll run <code>npm install</code> on your project).</em></li>
+<li>Clone this repo.</li>
 <li>Run <code>npm install</code> on cloned repo.</li>
 <li>Set up <a href="https://www.postgresql.org/">PostgreSQL</a> server <em>(other RDBMS are not supported)</em>. Default configuration should be fine, just create a user and a database for that user.</li>
 <li>Head over to <a href="https://epsg.org/download-dataset.html">here</a>, create an account (if you don't have one) and download PostgreSQL scripts.</li>
 <li>Extract downloaded scripts to <code>postgres_prep</code> directory.</li>
-<li>Run <code>npm run update-all</code> to update everything and rebuilds the project. See arguments below. <strong>Warning: this script utilises <code>epsg</code> schema and will erase it completely! It's hardcoded and can't be changed.</strong> To avoid data loss, create a separate database solely to run this script.</li>
-<li><strong>For maintainers:</strong> commit the whole project to the GitHub and create a pull request.</li>
+<li>Run <code>npm run update-all</code> to update everything and rebuilds the project. See arguments below. <strong>Warning: this script utilizes <code>epsg</code> schema and will erase it completely! It's hardcoded and can't be changed.</strong> To avoid data loss, create a separate database solely to run this script.</li>
 </ol>
 <p>There're actually two scripts: <code>update-all</code> which has been described above and <code>update-existing</code> which will update project files from existing database. Both of these scripts accepts following arguments:</p>
 <pre class="prettyprint source"><code>--host          - PostgreSQL host                      - Defaults to &quot;localhost&quot;
@@ -226,13 +232,13 @@ async function workWithGeoTIFF(blob) {
 <p>Arguments passed to npm scripts in following manner: <code>npm run [script name] -- [script arguments]</code>, for example: <code>npm run update-all -- --user myuser --password mypassword</code>. Note the <code>--</code> separator, it should always present when using this library's scripts.</p>
 <h1>FAQ</h1>
 <h2>Why do I need it?</h2>
-<p>Every GeoTIFF is bound to some kind of Coordinate Reference System (CRS) which in combintaion with georeferencing data defines where pixel coordinates are on the Earth. These CRS are quite different from what you can find, let's say, in Leaflet or OpenLayers which uses WGS <em>(which is CRS too)</em> by default.</p>
+<p>Every GeoTIFF is bound to some kind of Coordinate Reference System (CRS) which in combination with georeferencing data defines where pixel coordinates are on the Earth. These CRS are quite different from what you can find, let's say, in Leaflet or OpenLayers which uses WGS <em>(which is CRS too)</em> by default.</p>
 <p>So you need to convert image coordinates from one CRS to another. <a href="https://github.com/proj4js/proj4js">proj4js</a> is the best tool to do that. You need to supply an input and output CRS <em>(which Proj4 calls a projection; yes, terminology is quite confusing)</em> to it in form of a string.</p>
 <p>For output, you can specify whatever your software is using. But input is defined by geokeys <em>(information embedded into GeoTIFF file)</em>. Geokeys are really hard to handle. This library will create an input Proj4 string for you.</p>
 <p>How to perform all of that is described in <a href="#general-usage">example</a> above.</p>
 <p>Without these procedures, you'll get wrong results.</p>
 <h2>How is it different from <a href="https://github.com/derhuerst/epsg-index">epsg-index</a>?</h2>
-<p>epsg-index only provides projections definitions, GeoTIFF uses more than that. Actually, this library uses epsg-index under-the-hood!</p>
+<p>epsg-index only provides projections definitions, GeoTIFF uses more than that.</p>
 <h2>How does it compare to already existing and battle-proven libraries such as GDAL?</h2>
 <p>Pros:</p>
 <ol>
@@ -255,17 +261,20 @@ async function workWithGeoTIFF(blob) {
 <h2>This library produces wrong results!</h2>
 <p>This library only maps geokeys to their Proj4 definitions and builds a final Proj4 string. It doesn't perform any projections.</p>
 <p>If you've encountered a bug, please, take a look at Proj4 string first and compare it to one generated by a professional GIS. If something is fundamentally wrong, it's the issue of this library. Otherwise, there's something wrong with Proj4.</p>
+<p>If you're comparing results with what <a href="https://epsg.io">epsg.io</a> says, note that while <a href="https://epsg.io">epsg.io</a> is mostly right, it's not an official data source. For example, <a href="https://epsg.io">epsg.io</a> maps CRS <code>21780</code> to <code>+proj=somerc</code>, but the right projection seems to be <code>+proj=omerc</code>. If you're not sure how to verify which Proj4 string is correct, feel free to message me anyway.</p>
 <p>Please, don't report redundant parameters <em>(for example, <code>+a</code> and <code>+b</code> that are the same as <code>+ellps</code> provides)</em> as a bug. This behavior simplifies development, increases performance by not making useless comparisons and ensures that the right parameters are used.</p>
 <p>Missing <code>+units</code> is also not a bug, you're converting coordinates to meters by using <code>geokeysToProj4.convertCoordinates()</code>.</p>
+<h2>What are the sources for Proj4 strings?</h2>
+<p>Official database from epsg.org is the main data source. Data is enriched by some <a href="EPSG/data/AdditionalCRS.js">additional sources</a>. <a href="https://epsg.io">epsg.io</a> is used to selectively check if Proj4 strings are correct.</p>
 <h1>Contributing</h1>
 <p>You can contribute by solving <a href="#known-issues">described issues</a> or by <a href="#looking-for-maintainers">maintaining the database</a>.</p>
 <h1>Related projects</h1>
 <ol>
 <li><a href="https://github.com/geotiffjs/geotiff.js/">geotiff.js</a> is a library that can read GeoTIFF images.</li>
 <li><a href="https://github.com/proj4js/proj4js">proj4js</a> is a port of Proj4 to JS.</li>
-<li><a href="https://github.com/derhuerst/epsg-index">epsg-index</a> is a machine-readable index of all EPSG coordinate systems, used by this library.</li>
-<li><a href="https://epsg.io">epsg.io</a> is a website that provides all the EPSG stuff mostly in human-readable form, and an API to access it. Used by this library with <a href="https://github.com/derhuerst/epsg-index">epsg-index</a> to grab projections definitions.</li>
-<li><a href="https://github.com/GeoTIFF/geokeys-to-proj4js">geokeys-to-proj4js</a> is a project with the same goal but far from to be finished, and looks abandoned.</li>
+<li><a href="https://github.com/derhuerst/epsg-index">epsg-index</a> is a machine-readable index of all EPSG coordinate reference systems.</li>
+<li><a href="https://epsg.io">epsg.io</a> is a website that provides all the EPSG stuff mostly in human-readable form, and an API to access it.</li>
+<li><a href="https://github.com/GeoTIFF/geokeys-to-proj4js">geokeys-to-proj4js</a> is a project with the same goal but far from to be finished, and it looks abandoned.</li>
 </ol></article>
     </section>
 
@@ -314,7 +323,7 @@ async function workWithGeoTIFF(blob) {
 <span class="jsdoc-message">
 	Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.7</a>
 	
-		on 2022-09-24T14:50:53+03:00
+		on 2024-03-09T10:31:21+00:00
 	
 	using the <a href="https://github.com/docstrap/docstrap">DocStrap template</a>.
 </span>
