@@ -9,11 +9,20 @@ const ProjectionGeoKey = require("./EPSG/data/ProjectionGeoKey.js");
 const PCSKeys = require("./EPSG/data/PCSKeys.js");
 const override = require("./EPSG/data/Overrides.js");
 
-const geodeticKeysToCopy = {
-	GeogGeodeticDatumGeoKey: require("./EPSG/data/GeogGeodeticDatumGeoKey.js"),
-	GeogPrimeMeridianGeoKey: require("./EPSG/data/GeogPrimeMeridianGeoKey.js"),
-	GeogEllipsoidGeoKey: require("./EPSG/data/GeogEllipsoidGeoKey.js"),
-}
+const geodeticKeysToCopy = [
+	{
+		names: ["GeodeticDatumGeoKey", "GeogGeodeticDatumGeoKey"], // Newer keys come first
+		obj: require("./EPSG/data/GeogGeodeticDatumGeoKey.js"),
+	},
+	{
+		names: ["PrimeMeridianGeoKey", "GeogPrimeMeridianGeoKey"],
+		obj: require("./EPSG/data/GeogPrimeMeridianGeoKey.js"),
+	},
+	{
+		names: ["EllipsoidGeoKey", "GeogEllipsoidGeoKey"],
+		obj: require("./EPSG/data/GeogEllipsoidGeoKey.js"),
+	},
+];
 
 /**
  * Represents user-defined value
@@ -43,20 +52,30 @@ const toFixed = (n) => {
 /**
  * Geokeys. If you're working with `geotiff` library, this is result of `image.getGeoKeys()`.
  * @typedef {Object} module:geokeysToProj4.GeoKeys
+ * @property {number} GeodeticCRSGeoKey See GeoTIFF docs for more information
  * @property {number} GeographicTypeGeoKey See GeoTIFF docs for more information
+ * @property {number} GeodeticDatumGeoKey See GeoTIFF docs for more information
  * @property {number} GeogGeodeticDatumGeoKey See GeoTIFF docs for more information
+ * @property {number} PrimeMeridianGeoKey See GeoTIFF docs for more information
  * @property {number} GeogPrimeMeridianGeoKey See GeoTIFF docs for more information
  * @property {number} GeogLinearUnitsGeoKey See GeoTIFF docs for more information
  * @property {number} GeogLinearUnitSizeGeoKey See GeoTIFF docs for more information
  * @property {number} GeogAngularUnitsGeoKey See GeoTIFF docs for more information
  * @property {number} GeogAngularUnitSizeGeoKey See GeoTIFF docs for more information
  * @property {number} GeogEllipsoidGeoKey See GeoTIFF docs for more information
+ * @property {number} EllipsoidSemiMajorAxisGeoKey See GeoTIFF docs for more information
  * @property {number} GeogSemiMajorAxisGeoKey See GeoTIFF docs for more information
+ * @property {number} EllipsoidSemiMinorAxisGeoKey See GeoTIFF docs for more information
  * @property {number} GeogSemiMinorAxisGeoKey See GeoTIFF docs for more information
+ * @property {number} EllipsoidInvFlatteningGeoKey See GeoTIFF docs for more information
  * @property {number} GeogInvFlatteningGeoKey See GeoTIFF docs for more information
+ * @property {number} PrimeMeridianLongitudeGeoKey See GeoTIFF docs for more information
+ * @property {number} PrimeMeridianLongitudeGeoKey See GeoTIFF docs for more information
  * @property {number} GeogPrimeMeridianLongGeoKey See GeoTIFF docs for more information
+ * @property {number} ProjectedCRSGeoKey See GeoTIFF docs for more information
  * @property {number} ProjectedCSTypeGeoKey See GeoTIFF docs for more information
  * @property {number} ProjectionGeoKey See GeoTIFF docs for more information
+ * @property {number} ProjMethodGeoKey See GeoTIFF docs for more information
  * @property {number} ProjCoordTransGeoKey See GeoTIFF docs for more information
  * @property {number} ProjLinearUnitsGeoKey See GeoTIFF docs for more information
  * @property {number} ProjLinearUnitSizeGeoKey See GeoTIFF docs for more information
@@ -79,6 +98,7 @@ const toFixed = (n) => {
  * @property {number} ProjAzimuthAngleGeoKey See GeoTIFF docs for more information
  * @property {number} ProjStraightVertPoleLongGeoKey See GeoTIFF docs for more information
  * @property {number} VerticalGeoKey See GeoTIFF docs for more information
+ * @property {number} VerticalCSTypeGeoKey See GeoTIFF docs for more information
  * @property {number} VerticalUnitsGeoKey  See GeoTIFF docs for more information
  * @property {number[]} GeogTOWGS84GeoKey Datum to WGS transformation parameters, unofficial key
  */
@@ -97,14 +117,14 @@ const toFixed = (n) => {
  * 1. If you're sure that file is fine or want to discuss it, please, create an issue at https://github.com/matafokka/geotiff-geokeys-to-proj4
  *
  * @typedef {Object} module:geokeysToProj4.ConversionErrors
- * @property {boolean} bothGCSAndPCSAreSet `true` When both `GeographicTypeGeoKey` and `ProjectedCSTypeGeoKey` geokeys are set. In this case, `GeographicTypeGeoKey` is used. The cause of this error is broken geokeys.
+ * @property {boolean} bothGCSAndPCSAreSet `true` When both `GeodeticCRSGeoKey` (or `GeographicTypeGeoKey`) and `ProjectedCRSGeoKey` (or `ProjectedCSTypeGeoKey`) geokeys are set. In this case, `GeographicTypeGeoKey` is used. The cause of this error is broken geokeys.
  * @property {number} CRSNotSupported Specified CRS can't be represented as Proj4 string or it's new and hasn't been added to this library. Value is EPSG code of specified CRS.
  * @property {number} GeogLinearUnitSizeGeoKeyNotDefined Geokey `GeogLinearUnitsGeoKey` is set to user-defined, but user hasn't specified `GeogLinearUnitSizeGeoKey`. In this case, every other key using this one assumed to be using meters. The cause of this error is broken geokeys.
  * @property {number} GeogAngularUnitSizeGeoKeyNotDefined Geokey `GeogAngularUnitsGeoKey` is set to user-defined, but user hasn't specified `GeogAngularUnitSizeGeoKey`. In this case, every other key using this one assumed to be using degrees. The cause of this error is broken geokeys.
  * @property {number} ProjLinearUnitSizeGeoKeyNotDefined Geokey `ProjLinearUnitsGeoKey` is set to user-defined, but user hasn't specified `ProjLinearUnitSizeGeoKey`. In this case, every other key using this one assumed to be using meters. The cause of this error is broken geokeys.
  * @property {number} conversionNotSupported Conversion specified in `ProjectionGeoKey` is not supported by this library. Value is EPSG conversion code.
- * @property {number} coordinateTransformationNotSupported Transformation specified in `ProjCoordTransGeoKey` is not supported by this library. Value is projection code. See http://geotiff.maptools.org/spec/geotiff6.html#6.3.3.3 for more information.
- * @property {number} verticalCsNotSupported Vertical CS specified in `VerticalCSTypeGeoKey` is not supported by this library. Value is EPSG CS code.
+ * @property {number} coordinateTransformationNotSupported Transformation specified in `ProjMethodGeoKey` (or `ProjCoordTransGeoKey`) is not supported by this library. Value is projection code. See http://geotiff.maptools.org/spec/geotiff6.html#6.3.3.3 for more information.
+ * @property {number} verticalCsNotSupported Vertical CS specified in `VerticalGeoKey` (or `VerticalCSTypeGeoKey`) is not supported by this library. Value is EPSG CS code.
  * @property {number} verticalCsUnitsNotSupported Vertical CS specified in `VerticalUnitsGeoKey` is not supported by this library. Value is EPSG uom code.
  * @property {number} verticalDatumsNotSupported Vertical datums are not supported by this library. If vertical CRS is user-defined, and `VerticalDatumGeoKey` is set, this error will be reported. Value is EPSG datum code.
  */
@@ -168,12 +188,15 @@ module.exports = {
 		let proj = "", x = 1, y = 1, z = 1, errors = {};
 
 		// First, get CRS, both geographic and projected
-		if (geoKeys.GeographicTypeGeoKey && geoKeys.ProjectedCSTypeGeoKey)
+		const geographicCode = geoKeys.GeodeticCRSGeoKey || geoKeys.GeographicTypeGeoKey;
+		const projectedCode = geoKeys.ProjectedCRSGeoKey || geoKeys.ProjectedCSTypeGeoKey;
+
+		if (geographicCode && projectedCode)
 			errors.bothGCSAndPCSAreSet = true;
 
-		let crsKey = geoKeys.GeographicTypeGeoKey || geoKeys.ProjectedCSTypeGeoKey;
+		let crsKey = geographicCode || projectedCode;
 		if (crsKey) {
-			let crs = CRS[crsKey.toString()];
+			let crs = CRS[crsKey + ""];
 
 			// Numbers are multipliers from vertical CRS
 			if (crs && typeof crs !== "number") {
@@ -193,15 +216,17 @@ module.exports = {
 		//   Read vertical CS  //
 		/////////////////////////
 
-		if (geoKeys.VerticalCSTypeGeoKey && geoKeys.VerticalCSTypeGeoKey !== userDefined) {
-			let verticalCs = CRS[geoKeys.VerticalCSTypeGeoKey]; // Yes, that's CRS, not CS. Either vertical CRS or geographic 3D CRS may be set.
+		const verticalCode = geoKeys.VerticalGeoKey || geoKeys.VerticalCSTypeGeoKey;
+
+		if (verticalCode && verticalCode !== userDefined) {
+			let verticalCs = CRS[verticalCode + ""]; // Yes, that's CRS, not CS. Either vertical CRS or geographic 3D CRS may be set.
 
 			if (typeof verticalCs === "number")
 				z = verticalCs;
 			else if (verticalCs.z)
 				verticalCs = verticalCs.z;
 			else
-				errors.verticalCsNotSupported = geoKeys.VerticalCSTypeGeoKey;
+				errors.verticalCsNotSupported = verticalCode;
 		} else if (geoKeys.VerticalUnitsGeoKey) {
 			const newZ = Units[geoKeys.VerticalUnitsGeoKey];
 			z = newZ || z;
@@ -220,12 +245,18 @@ module.exports = {
 		// Copy geodetic keys  //
 		/////////////////////////
 
-		for (let name in geodeticKeysToCopy) {
-			let value = geoKeys[name];
-			if (value) {
-				let keyValue = geodeticKeysToCopy[name][value.toString()];
-				if (keyValue !== undefined)
-					proj += " " + keyValue;
+		for (const key of geodeticKeysToCopy) {
+			for (const name of key.names) {
+				const value = geoKeys[name];
+
+				if (value) {
+					const keyValue = key.obj[value + ""];
+
+					if (keyValue !== undefined) {
+						proj += " " + keyValue;
+						continue;
+					}
+				}
 			}
 		}
 
@@ -275,34 +306,24 @@ module.exports = {
 		//       Read axes     //
 		/////////////////////////
 
-		let axes = {
-			GeogSemiMajorAxisGeoKey: null,
-			GeogSemiMinorAxisGeoKey: null,
-		}
+		let a = (geoKeys.EllipsoidSemiMajorAxisGeoKey || geoKeys.GeogSemiMajorAxisGeoKey || 0) * units.GeogLinearUnitsGeoKey;
+		let b = (geoKeys.EllipsoidSemiMinorAxisGeoKey || geoKeys.GeogSemiMinorAxisGeoKey || 0) * units.GeogLinearUnitsGeoKey;
+		const invFlattening = geoKeys.EllipsoidInvFlatteningGeoKey || geoKeys.GeogInvFlatteningGeoKey;
 
-		for (let axis in axes) {
-			let key = geoKeys[axis];
-			if (key)
-				axes[axis] = key * units.GeogLinearUnitsGeoKey;
-		}
+		if (invFlattening && a) // Can't calculate semi minor axis if semi major axis is missing
+			b = a - a / invFlattening;
 
-		if (geoKeys.GeogInvFlatteningGeoKey && axes.GeogSemiMajorAxisGeoKey) // Can't calculate semi minor axis if semi major axis is missing
-			axes.GeogSemiMinorAxisGeoKey = axes.GeogSemiMajorAxisGeoKey - axes.GeogSemiMajorAxisGeoKey / geoKeys.GeogInvFlatteningGeoKey;
+		if (a)
+			proj += " +a=" + a;
 
-		if (axes.GeogSemiMajorAxisGeoKey)
-			proj += " +a=" + axes.GeogSemiMajorAxisGeoKey;
-
-		let b;
-		if (axes.GeogSemiMinorAxisGeoKey)
-			b = axes.GeogSemiMinorAxisGeoKey;
-		else if (proj.indexOf("+b") === -1)
-			b = axes.GeogSemiMajorAxisGeoKey;
+		if (!b && proj.indexOf("+b") === -1)
+			b = a;
 
 		if (b)
 			proj += " +b=" + b;
 
 		// Get prime meridian
-		let pm = geoKeys.GeogPrimeMeridianLongGeoKey;
+		const pm = geoKeys.PrimeMeridianLongitudeGeoKey || geoKeys.GeogPrimeMeridianLongGeoKey;
 		if (pm)
 			proj += " +pm=" + (pm * units.GeogAngularUnitsGeoKey);
 
@@ -316,7 +337,7 @@ module.exports = {
 
 		// This key despite its name defines conversion -- a method (and its parameters) which converts coordinates. The basic example of it is a projection.
 		if (geoKeys.ProjectionGeoKey && geoKeys.ProjectionGeoKey !== userDefined) {
-			let conversion = ProjectionGeoKey[geoKeys.ProjectionGeoKey.toString()];
+			let conversion = ProjectionGeoKey[geoKeys.ProjectionGeoKey + ""];
 			if (conversion)
 				proj += " +proj=" + conversion;
 			else
@@ -349,12 +370,14 @@ module.exports = {
 		}
 
 		// This key should take precedence over all other keys
-		if (geoKeys.ProjCoordTransGeoKey && geoKeys.ProjCoordTransGeoKey !== userDefined) {
-			let projName = ProjCoordTransGeoKey[geoKeys.ProjCoordTransGeoKey.toString()];
+		const transformKey = geoKeys.ProjMethodGeoKey || geoKeys.ProjCoordTransGeoKey;
+
+		if (transformKey && transformKey !== userDefined) {
+			let projName = ProjCoordTransGeoKey[transformKey + ""];
 			if (projName)
 				proj += " +proj=" + projName;
 			else
-				errors.coordinateTransformationNotSupported = geoKeys.ProjCoordTransGeoKey;
+				errors.coordinateTransformationNotSupported = transformKey;
 		}
 
 		// Gosh, everybody seems to suggest to add +no_defs to avoid errors caused by default values. Let's follow this suggestion.
