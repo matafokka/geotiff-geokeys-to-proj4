@@ -137,7 +137,20 @@ let testKeys = [
 		GeographicTypeGeoKey: 4326,
 		ProjectedCSTypeGeoKey: 32634,
 		proj4: "+proj=longlat +datum=WGS84 +no_defs"
-	}
+	},
+
+	{
+		name: "Some example DEM with VerticalCSTypeGeoKey changed",
+		GTModelTypeGeoKey: 1,
+		GTRasterTypeGeoKey: 2,
+		GTCitationGeoKey: 'WGS 84 / UTM zone 32N + EGM2008 geoid height',
+		GeogCitationGeoKey: 'WGS 84',
+		GeogAngularUnitsGeoKey: 9102,
+		ProjectedCSTypeGeoKey: 32632,
+		ProjLinearUnitsGeoKey: 9001,
+		VerticalCSTypeGeoKey: 8051,
+		proj4: "+proj=utm +zone=32 +datum=WGS84 +units=m +no_defs",
+	  }
 ];
 
 // Test runner
@@ -149,6 +162,7 @@ Original string:    ${key.proj4}
 Generated string:   ${proj.proj4}
 X multiplier:       ${proj.coordinatesConversionParameters.x}
 Y multiplier:       ${proj.coordinatesConversionParameters.y}
+Z multiplier:       ${proj.coordinatesConversionParameters.z}
 Units:              ${proj.coordinatesUnits}
 Is GCS:             ${proj.isGCS ? "Yes" : "No"}`
 	let errStr = "";

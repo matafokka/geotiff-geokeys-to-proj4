@@ -9,7 +9,7 @@ const ProjectionGeoKey = require("./EPSG/data/ProjectionGeoKey.js");
 const PCSKeys = require("./EPSG/data/PCSKeys.js");
 const override = require("./EPSG/data/Overrides.js");
 
-const geographicKeysToCopy = {
+const geodeticKeysToCopy = {
 	GeogGeodeticDatumGeoKey: require("./EPSG/data/GeogGeodeticDatumGeoKey.js"),
 	GeogPrimeMeridianGeoKey: require("./EPSG/data/GeogPrimeMeridianGeoKey.js"),
 	GeogEllipsoidGeoKey: require("./EPSG/data/GeogEllipsoidGeoKey.js"),
@@ -78,6 +78,8 @@ const toFixed = (n) => {
  * @property {number} ProjScaleAtCenterGeoKey See GeoTIFF docs for more information
  * @property {number} ProjAzimuthAngleGeoKey See GeoTIFF docs for more information
  * @property {number} ProjStraightVertPoleLongGeoKey See GeoTIFF docs for more information
+ * @property {number} VerticalGeoKey See GeoTIFF docs for more information
+ * @property {number} VerticalUnitsGeoKey  See GeoTIFF docs for more information
  * @property {number[]} GeogTOWGS84GeoKey Datum to WGS transformation parameters, unofficial key
  */
 
@@ -102,13 +104,17 @@ const toFixed = (n) => {
  * @property {number} ProjLinearUnitSizeGeoKeyNotDefined Geokey `ProjLinearUnitsGeoKey` is set to user-defined, but user hasn't specified `ProjLinearUnitSizeGeoKey`. In this case, every other key using this one assumed to be using meters. The cause of this error is broken geokeys.
  * @property {number} conversionNotSupported Conversion specified in `ProjectionGeoKey` is not supported by this library. Value is EPSG conversion code.
  * @property {number} coordinateTransformationNotSupported Transformation specified in `ProjCoordTransGeoKey` is not supported by this library. Value is projection code. See http://geotiff.maptools.org/spec/geotiff6.html#6.3.3.3 for more information.
+ * @property {number} verticalCsNotSupported Vertical CS specified in `VerticalCSTypeGeoKey` is not supported by this library. Value is EPSG CS code.
+ * @property {number} verticalCsUnitsNotSupported Vertical CS specified in `VerticalUnitsGeoKey` is not supported by this library. Value is EPSG uom code.
+ * @property {number} verticalDatumsNotSupported Vertical datums are not supported by this library. If vertical CRS is user-defined, and `VerticalDatumGeoKey` is set, this error will be reported. Value is EPSG datum code.
  */
 
 /**
  * Parameters to pass to {@link module:geokeysToProj4.convertCoordinates} or to convert coordinates manually
  * @typedef {Object} CoordinateConversionParameters
- * @property {number} x Multiply X coordinate by this parameter to convert it to standard unit
- * @property {number} y Multiply Y coordinate by this parameter to convert it to standard unit
+ * @property {number} x Multiply X coordinate by this parameter to convert it to standard units (meters or degrees)
+ * @property {number} y Multiply Y coordinate by this parameter to convert it to standard units (meters or degrees)
+ * @property {number} z Multiply Z coordinate (pixel value) by this parameter to convert it to standard units (meters)
  */
 
 /**
@@ -118,7 +124,7 @@ const toFixed = (n) => {
  * @property {boolean} shouldConvertCoordinates If true, coordinates should be converted by using {@link module:geokeysToProj4.convertCoordinates} before passing to proj4js
  * @property {CoordinateConversionParameters} coordinatesConversionParameters Parameters to pass to {@link module:geokeysToProj4.convertCoordinates}
  * @property {"metre"|"metre per second"|"second"|"radian"|"radian per second"|"scale"|"scale per second"|"degree"} coordinatesUnits Coordinates units after conversion. EPSG defines speed, angular speed and scale as linear units, and GeoTIFF relies on EPSG. So there's a chance that coordinates will represent something's different from distance (in case of PCS). Note: GCS will always use degrees; if PCS uses angles, radians will be used.
- * @property {boolean} isGCS If set to true, GCS is used. Otherwise, PCS is used.
+ * @property {boolean} isGCS If `true`, geographic (either 2D or 3D) CRS is used.
  * @property {module:geokeysToProj4.ConversionErrors} errors Errors that have occurred while processing geokeys. If no error has occurred, there will be an empty object.
  */
 
@@ -127,6 +133,7 @@ const toFixed = (n) => {
  * @typedef {Object} module:geokeysToProj4.Point
  * @property {number} x X coordinate (coordinate of a first axis of CRS) of a point
  * @property {number} y Y coordinate (coordinate of a second axis of CRS) of a point
+ * @property {number} z Z coordinate (coordinate of a third axis of CRS) of a point, i.e. transformed pixel value. Always points up.
  */
 
 /**
@@ -137,10 +144,10 @@ const toFixed = (n) => {
  * In general, you want to:
  * 1. Read geokeys.
  * 1. Pass them to `geokeysToProj4.toProj4()` (let's call returned object `projObj`).
- * 1. Pass `projObj.proj4` (which is Proj4 string) to proj4js.
+ * 1. Pass `projObj.proj4` (Proj4 string) to proj4js.
  * 1. Convert pixel coordinates to CRS coordinates (let's call them `crsX` and `crsY`).
  * 1. Convert CRS coordinates to usable units *(in most cases, meters, but GeoTIFF allows speed, angular speed, and scale)*: `geokeysToProj4(crsX, crsY, projObj.coordinatesConversionParameters)`.
- * 1. The returned object will contain x and y coordinates which are ready to be projected with proj4js. So project them.
+ * 1. The returned object contains X, Y, Z coordinates. which are ready to be projected with proj4js. So project them.
  *
  * Of course, you can alter this workflow to use this library with any other (presumably, server-side) software.
  *
@@ -153,7 +160,12 @@ module.exports = {
 	 * @return {module:geokeysToProj4.ProjectionParameters} Projection parameters
 	 */
 	toProj4: function (geoKeys) {
-		let proj = "", x = 1, y = 1, errors = {};
+
+		/////////////////////////
+		//    Read base CRS    //
+		/////////////////////////
+
+		let proj = "", x = 1, y = 1, z = 1, errors = {};
 
 		// First, get CRS, both geographic and projected
 		if (geoKeys.GeographicTypeGeoKey && geoKeys.ProjectedCSTypeGeoKey)
@@ -162,29 +174,56 @@ module.exports = {
 		let crsKey = geoKeys.GeographicTypeGeoKey || geoKeys.ProjectedCSTypeGeoKey;
 		if (crsKey) {
 			let crs = CRS[crsKey.toString()];
-			if (crs) {
+
+			// Numbers are multipliers from vertical CRS
+			if (crs && typeof crs !== "number") {
 				if (typeof crs === "string")
 					proj = crs;
 				else {
 					proj = crs.p;
 					x = crs.x;
 					y = crs.y;
+					z = crs.z || z;
 				}
 			} else if (crsKey !== userDefined)
 				errors.CRSNotSupported = crsKey;
 		}
 
-		if (proj === "")
+		/////////////////////////
+		//   Read vertical CS  //
+		/////////////////////////
+
+		if (geoKeys.VerticalCSTypeGeoKey && geoKeys.VerticalCSTypeGeoKey !== userDefined) {
+			let verticalCs = CRS[geoKeys.VerticalCSTypeGeoKey]; // Yes, that's CRS, not CS. Either vertical CRS or geographic 3D CRS may be set.
+
+			if (typeof verticalCs === "number")
+				z = verticalCs;
+			else if (verticalCs.z)
+				verticalCs = verticalCs.z;
+			else
+				errors.verticalCsNotSupported = geoKeys.VerticalCSTypeGeoKey;
+		} else if (geoKeys.VerticalUnitsGeoKey) {
+			const newZ = Units[geoKeys.VerticalUnitsGeoKey];
+			z = newZ || z;
+
+			if (!newZ)
+				errors.verticalCsUnitsNotSupported = geoKeys.VerticalUnitsGeoKey;
+
+			if (geoKeys.VerticalDatumGeoKey)
+				errors.verticalDatumsNotSupported = geoKeys.VerticalDatumGeoKey;
+		}
+
+		if (!proj)
 			proj = "+proj=longlat"; // If GeoTIFF uses PCS, string rebuilding will override +proj
 
 		/////////////////////////
-		//         GCS         //
+		// Copy geodetic keys  //
 		/////////////////////////
 
-		for (let name in geographicKeysToCopy) {
+		for (let name in geodeticKeysToCopy) {
 			let value = geoKeys[name];
 			if (value) {
-				let keyValue = geographicKeysToCopy[name][value.toString()];
+				let keyValue = geodeticKeysToCopy[name][value.toString()];
 				if (keyValue !== undefined)
 					proj += " " + keyValue;
 			}
@@ -192,7 +231,10 @@ module.exports = {
 
 		// All other geokeys will override ones provided by keys above
 
-		// Read GCS units
+		/////////////////////////
+		//      Read units     //
+		/////////////////////////
+
 		let units = {
 			GeogLinearUnitsGeoKey: 1,
 			GeogAngularUnitsGeoKey: 1,
@@ -229,7 +271,10 @@ module.exports = {
 			units[name] = m;
 		}
 
-		// Get axes
+		/////////////////////////
+		//       Read axes     //
+		/////////////////////////
+
 		let axes = {
 			GeogSemiMajorAxisGeoKey: null,
 			GeogSemiMinorAxisGeoKey: null,
@@ -268,8 +313,6 @@ module.exports = {
 		/////////////////////////
 		//         PCS         //
 		/////////////////////////
-
-		// We've already got CRS, let's jump straight to the other keys
 
 		// This key despite its name defines conversion -- a method (and its parameters) which converts coordinates. The basic example of it is a projection.
 		if (geoKeys.ProjectionGeoKey && geoKeys.ProjectionGeoKey !== userDefined) {
@@ -382,37 +425,36 @@ module.exports = {
 
 		x = toFixed(x);
 		y = toFixed(y);
+		z = toFixed(z);
 
 		return {
 			proj4: proj,
-			coordinatesConversionParameters: {
-				x: x,
-				y: y,
-			},
-			shouldConvertCoordinates: (x !== 1 || y !== 1),
+			coordinatesConversionParameters: { x, y, z },
+			shouldConvertCoordinates: (x !== 1 || y !== 1 || z !== 1),
 			coordinatesUnits: coordUnits,
 			isGCS: isGCS,
 			errors: errors,
 		}
-
 	},
 
 	/**
 	 * Converts given coordinates to standard ones (i.e. meters or degrees).
 	 *
-	 * Basically, a short way to multiply x and y by `parameters.x` and `parameters.y` respectively.
+	 * Basically, a short way to multiply `x, y, z` by `parameters.x`, `parameters.y` and `parameters.z` respectively.
 	 *
 	 * It does NOT accept image coordinates! Convert image coordinates to projection coordinates first (by multiplying image coordinates by `image.getResolution()` and adding coordinates of a top left corner) and then pass converted coordinates to this function.
 	 *
 	 * @param x {number} X coordinate
 	 * @param y {number} Y coordinate
+	 * @param z {number} Pixel value, i.e. Z coordinate. If you don't use DEM, pass any number.
 	 * @param parameters {Object} getProjectionParameters().coordinatesConversionParameters
 	 * @return {module:geokeysToProj4.Point} Converted coordinates
 	 */
-	convertCoordinates: function (x, y, parameters) {
+	convertCoordinates: function (x, y, z, parameters) {
 		return {
 			x: x * parameters.x,
 			y: y * parameters.y,
+			z: z * parameters.z,
 		}
 	}
 }

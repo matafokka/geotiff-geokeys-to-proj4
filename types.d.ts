@@ -12,7 +12,7 @@
  * 1. Pass `projObj.proj4` (which is Proj4 string) to proj4js.
  * 1. Convert pixel coordinates to CRS coordinates (let's call them `crsX` and `crsY`).
  * 1. Convert CRS coordinates to usable units *(in most cases, meters, but GeoTIFF allows speed, angular speed, and scale)*: `geokeysToProj4(crsX, crsY, projObj.coordinatesConversionParameters)`.
- * 1. The returned object will contain x and y coordinates which are ready to be projected with proj4js. So project them. Of course, you can alter this workflow to use this library with any other (presumably, server-side) software.
+ * 1. The returned object contains X, Y, Z coordinates. which are ready to be projected with proj4js. So project them. Of course, you can alter this workflow to use this library with any other (presumably, server-side) software.
  */
 declare module "geokeysToProj4";
 
@@ -160,6 +160,14 @@ export interface GeoKeys {
 	 * See GeoTIFF docs for more information
 	 */
 	ProjStraightVertPoleLongGeoKey: number;
+    /**
+     * See GeoTIFF docs for more information
+     */
+    VerticalGeoKey: number;
+    /**
+     * See GeoTIFF docs for more information
+     */
+    VerticalUnitsGeoKey: number;
 	/**
 	 * Datum to WGS transformation parameters, unofficial key
 	 */
@@ -208,6 +216,18 @@ export interface ConversionErrors {
 	 * Transformation specified in `ProjCoordTransGeoKey` is not supported by this library. Value is projection code. See http://geotiff.maptools.org/spec/geotiff6.html#6.3.3.3 for more information.
 	 */
 	coordinateTransformationNotSupported: number;
+    /**
+     * Vertical CS specified in `VerticalCSTypeGeoKey` is not supported by this library. Value is EPSG CS code.
+     */
+    verticalCsNotSupported: number;
+    /**
+     * Vertical CS specified in `VerticalUnitsGeoKey` is not supported by this library. Value is EPSG uom code.
+     */
+    verticalCsUnitsNotSupported: number;
+    /**
+     * Vertical datums are not supported by this library. If vertical CRS is user-defined, and `VerticalDatumGeoKey` is set, this error will be reported. Value is EPSG datum code.
+     */
+    verticalDatumsNotSupported: number;
 }
 
 /**
@@ -239,7 +259,7 @@ export interface ProjectionParameters {
 	 */
 	coordinatesUnits: "metre" | "metre per second" | "second" | "radian" | "radian per second" | "scale" | "scale per second" | "degree";
 	/**
-	 * If set to true, GCS is used. Otherwise, PCS is used.
+	 * If `true`, geographic (either 2D or 3D) CRS is used.
 	 */
 	isGCS: boolean;
 	/**
@@ -260,6 +280,10 @@ export interface Point {
 	 * Y coordinate (coordinate of a second axis of CRS) of a point
 	 */
 	y: number;
+    /**
+     * Z coordinate (coordinate of a third axis of CRS) of a point, i.e. transformed pixel value. Always points up.
+     */
+    z: number;
 }
 
 /**
@@ -268,14 +292,19 @@ export interface Point {
 export interface CoordinateConversionParameters {
 
 	/**
-	 * Multiply X coordinate by this parameter to convert it to standard unit
+	 * Multiply X coordinate by this parameter to convert it to standard units (meters or degrees)
 	 */
 	x: number,
 
 	/**
-	 * Multiply Y coordinate by this parameter to convert it to standard unit
+	 * Multiply Y coordinate by this parameter to convert it to standard units (meters or degrees)
 	 */
 	y: number,
+
+	/**
+	 * Multiply Z coordinate (pixel value) by this parameter to convert it to standard units (meters)
+	 */
+	z: number,
 }
 
 /**
@@ -288,12 +317,14 @@ export function toProj4(geoKeys: GeoKeys): ProjectionParameters;
 /**
  * Converts given coordinates to standard ones (i.e. meters or degrees).
  *
- * Basically, a short way to multiply x and y by `parameters.x` and `parameters.y` respectively.
+ * Basically, a short way to multiply `x, y, z` by `parameters.x`, `parameters.y` and `parameters.z` respectively.
  *
  * It does NOT accept image coordinates! Convert image coordinates to projection coordinates first (by multiplying image coordinates by `image.getResolution()` and adding coordinates of a top left corner) and then pass converted coordinates to this function.
  *
  * @param x {number} X coordinate
  * @param y {number} Y coordinate
+ * @param z {number} Pixel value, i.e. Z coordinate
  * @param parameters {Object} getProjectionParameters().coordinatesConversionParameters
+ * @return {module:geokeysToProj4.Point} Converted coordinates
  */
-export function convertCoordinates(x: number, y: number, parameters: Object): Point;
+export function convertCoordinates(x: number, y: number, z: number, parameters: Object): Point;

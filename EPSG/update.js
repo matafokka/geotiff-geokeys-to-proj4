@@ -39,6 +39,7 @@ function fetchBasicEntities() {
 	let files = [
 		{name: "EllipsoidsWorker", completed: false},
 		{name: "MeridiansWorker", completed: false},
+		{name: "VerticalCSWorker", completed: false},
 	];
 	for (let file of files) {
 		let w = new Worker(`${baseDir + file.name}.js`, options);

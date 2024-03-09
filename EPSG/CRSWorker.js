@@ -15,9 +15,11 @@ So, for now, there's no standard use for this tag.
 
 const datums = require("./data/GeogGeodeticDatumGeoKey.js");
 const conversions = require("./data/ProjectionGeoKey.js");
-const Units = require("./data/Units.js");
 const additionalCrs = require("./data/AdditionalCRS.js");
 const forEach = require("./forEachEntryInEPSG.js");
+const csNameToObj = require("./utils/csNameToObj.js");
+const csUomToMultiplier = require("./utils/csUomToMultiplier.js");
+const verticalCS = require("./data/VerticalCS.js");
 
 function getObjectFromProjString(proj) {
 	if (!proj)
@@ -62,22 +64,48 @@ forEach(`
 	SELECT crs.coord_ref_sys_code AS id,
 		crs.coord_ref_sys_kind as type,
 		cs.coord_sys_name as cs_name,
-		crs.cmpd_horizcrs_code AS compound_base_crs,
+		crs.cmpd_horizcrs_code AS compound_horizontal_crs,
+		crs.cmpd_vertcrs_code AS compound_vertical_crs,
 		crs.datum_code AS datum,
 		crs.base_crs_code AS base_crs,
 		crs.projection_conv_code AS conversion,
 		cs.coord_sys_code AS cs_id,
-		base_crs_data.datum_code AS base_datum
+		base_crs_data.datum_code AS base_datum,
+		base_crs_data.coord_sys_code AS base_crs_cs_code,
+		vertical_crs_data.coord_sys_code AS vertical_cs
 	FROM epsg.epsg_coordinatereferencesystem as crs
 		LEFT JOIN epsg.epsg_coordinatereferencesystem base_crs_data ON crs.base_crs_code = base_crs_data.coord_ref_sys_code
 		LEFT JOIN epsg.epsg_coordinatesystem cs ON cs.coord_sys_code = crs.coord_sys_code
-	WHERE crs.coord_ref_sys_kind NOT LIKE 'vertical' and crs.coord_ref_sys_kind NOT LIKE 'engineering'
-	ORDER BY crs.coord_ref_sys_kind DESC
+		LEFT JOIN epsg.epsg_coordinatereferencesystem vertical_crs_data ON crs.cmpd_vertcrs_code = vertical_crs_data.coord_ref_sys_code
+	WHERE crs.coord_ref_sys_kind NOT LIKE 'engineering'
+	-- Make compound CRS and derived CRS come last, so we can reference previously fetched CRS
+	ORDER BY crs.coord_ref_sys_kind DESC, crs.base_crs_code DESC
 `, async (result, fetchedCRS) => {
 
 	// Due to sorting, compound CRS comes last
-	if (result.type === "compound")
-		return fetchedCRS[result.compound_base_crs.toString()];
+	if (result.type === "compound") {
+		const horizontalCRS = fetchedCRS[result.compound_horizontal_crs.toString()];
+		const z = verticalCS[result.vertical_cs.toString()];
+
+		if (!horizontalCRS || !z)
+			return;
+
+		if (typeof horizontalCRS === "string") {
+			return {
+				p: horizontalCRS,
+				x: 1,
+				y: 1,
+				z,
+			}
+		}
+
+		return { ...horizontalCRS, z };
+	}
+
+	// Return multiplier for vertical CRS
+	if (result.type === "vertical") {
+		return verticalCS[result.cs_id?.toString()] || verticalCS[result.base_crs_cs_code?.toString()];
+	}
 
 	let conversion = conversions[result.conversion + ""];
 
@@ -129,44 +157,14 @@ forEach(`
 	if (!result.cs_name)
 		return projStr;
 
-	// Get orientation
-
-	// For some reason, CS parameters are merged into one string instead of being split to the columns
-	// Example:
-	// Ellipsoidal 3D CS. Axes: latitude, longitude, ellipsoidal height. Orientations: north, east, up. UoM: degree, degree, metre.
-	// Let's just hope this structure won't change later, ha-ha.
-	let sentencesStr = result.cs_name.toLowerCase(); // Normalize string, though, it already seems normalized
-	if (sentencesStr.endsWith("."))
-		sentencesStr = sentencesStr.substring(0, sentencesStr.length - 1);
-	let sentences = sentencesStr.split(". ");
-
-	// We don't need CS description and axes
-	sentences.shift();
-	sentences.shift();
-
-	// Split each sentence into parameter name (string before column) and values separated by a comma
-	// CRS should have two fields: orientations and uom
-	// uom can have one (for all axes), two (for lon and lat) or three (for lon, lat and height) units.
-	// The third one is always for height. We don't need it, so we'll ignore it later.
-	let crs = {};
-	for (let sentence of sentences) {
-		let paramName = "", columnIndex = 0;
-		for (let symbol of sentence) {
-			columnIndex++; // Accounting space
-			if (symbol === ":")
-				break;
-			paramName += symbol;
-		}
-		crs[paramName] = sentence.substring(columnIndex + 1).split(", ");
-	}
-
 	// Get orientation, i.e. +axis parameter
 
+	const cs = csNameToObj(result.cs_name);
 	let orientation = "";
-	let isOrientationValid = !!crs.orientations;
+	let isOrientationValid = !!cs.orientations;
 
-	if (crs.orientations) {
-		for (let direction of crs.orientations) {
+	if (cs.orientations) {
+		for (let direction of cs.orientations) {
 			const firstLetter = direction[0];
 
 			if (!ORIENTATION_LETTERS[firstLetter]) {
@@ -199,68 +197,46 @@ forEach(`
 		}
 	}
 
+	const isVertical = result.type === "vertical";
+
 	let uomsNames = {
-		x: crs.uom[0],
-		y: crs.uom[1]
+		x: cs.uom[0],
+		y: cs.uom[1],
+		z: cs.uom[isVertical ? 0 : 2],
 	};
+
+	const isGeographic3d = result.type === "geographic 3D";
+	const isGeocentric = result.type === "geocentric";
+
+	if (!isGeographic3d && !isGeocentric)
+		delete uomsNames.z;
 
 	if (!uomsNames.y)
 		uomsNames.y = uomsNames.x;
 
-	let uoms = {};
-	let axes = ["x", "y"];
-	let isAngle = false;
-	for (let axis of axes) {
-		let uom = uomsNames[axis];
-		let m;
-		if (uom === "deg" || uom === "degree" || uom === "degrees") { // Can't just find deg because there're degree with hemisphere and dec degree
-			m = 1;
-			isAngle = true;
-		} else if (uom.includes("grad") || uom.includes("gon")) {
-			m = Units["9105"].m * 180 / Math.PI;
-			isAngle = true;
-		} else if (uom.includes("rad")) { // grad handled by previous case
-			m = Units["9101"].m * 180 / Math.PI;
-			isAngle = true;
-		} else if (uom === "m" || uom.includes("met"))
-			m = 1;
-		else if (uom === "ft")
-			m = 0.3048;
-		else if (uom === "ftus")
-			m = 0.3048006096;
-		else if (uom === "ydind")
-			m = 0.3047995;
-		else if (uom === "ftcla")
-			m = 0.3047972654;
-		else if (uom === "ydcl")
-			m = 3.3047972654;
-		else if (uom === "chbnb")
-			m = Units["9042"].m;
-		else if (uom === "chse")
-			m = 20.1167651215526;
-		else if (uom === "chse(t)")
-			m = 20.116756;
-		else if (uom === "ftgc")
-			m = 0.304799710181509;
-		else if (uom === "ftse")
-			m = 0.304799471538676;
-		else if (uom === "km")
-			m = 1000;
-		else if (uom === "lkcla")
-			m = 0.201166195164;
-		else if (uom === "ydse")
-			m = 0.914398414616029;
-		else if (uom === "glm")
-			m = 1.0000135965;
-		else if (uom === "lk")
-			m = 0.201168;
-		else
+	if (!uomsNames.z) {
+		if (isGeographic3d || isVertical)
 			return;
 
-		// Uoms doesn't use other units than specified above for now, but let's kinda future-proof it
-		if (uom.includes("μ") || (isAngle && uom.includes("m")))
-			m *= 0.000001;
-		uoms[axis] = m;
+		if (isGeocentric)
+			uomsNames.z = uomsNames.x;
+	}
+
+	let uoms = {};
+	let axes = ["x", "y", "z"];
+	let isAngle = false;
+
+	for (let axis of axes) {
+		if (!uomsNames[axis])
+			continue;
+
+		const multiplier = csUomToMultiplier(uomsNames[axis]);
+
+		if (!multiplier.m)
+			return;
+
+		isAngle = isAngle || multiplier.isAngle;
+		uoms[axis] = multiplier.m;
 	}
 
 	if (orientation && isOrientationValid)
@@ -272,8 +248,7 @@ forEach(`
 	} else if (uoms.x || uoms.y) {
 		return {
 			p: projStr,
-			x: uoms.x,
-			y: uoms.y,
+			...uoms,
 		}
 	}
 
