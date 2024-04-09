@@ -4,7 +4,7 @@ This library converts GeoTIFF's geokeys to Proj4 string, so you can [consume](#w
 
 Intended to be used with [geotiff.js](https://github.com/geotiffjs/geotiff.js/) and [proj4js](https://github.com/proj4js/proj4js), it's basically a glue between these libraries, but it can be used with alternatives.
 
-Designed for both frontend and backend. Supports ES3+ environments *(any browser from 2000 year)*. Size is ~1 Mb *(despite what npm says, it counts both sources and bundle)*.
+Designed for both frontend and backend. Supports ES3+ environments *(any browser from 2000 year)*. Size is ~1.46 Mb *(despite what npm says, it counts both sources and bundle)*.
 
 Grab it from npm: `npm install geotiff-geokeys-to-proj4`.
 
@@ -25,28 +25,11 @@ Still, be sure to check out usage example below!
 
 In **Node.js** or with **bundler**: `const geokeysToProj4 = require("geotiff-geokeys-to-proj4");`
 
-In **TypeScript**: `import geokeysToProj4 from "geotiff-geokeys-to-proj4";`
+In **TypeScript**: `import geokeysToProj4 from "geotiff-geokeys-to-proj4";` or `import { toProj4, convertCoordinates } from "geotiff-geokeys-to-proj4";`
 
-In a **browser**: `<script src="path/to/main-dist.js"></script>` - after that you'll have `geokeysToProj4` global variable.
+In a **browser**: `<script src="path/to/main-dist-iife.js"></script>` - after that you'll have `geokeysToProj4` global variable.
 
-With **webpack**:
-
-Webpack displays a warning `Critical dependency: require function is used in a way in which dependencies cannot be statically extracted` when trying to `import geokeysToProj4 from "geotiff-geokeys-to-proj4"`.
-
-To remove this warning, import this library like so: `import geokeysToProj4 from "geotiff-geokeys-to-proj4/main.js";`.
-
-By doing so, you'll import the source entry point, and webpack will compile this library for you without any warnings.
-
-For TypeScript also do the following:
-
-1. Create a `.d.ts` file wherever you like.
-2. Paste this code here:
-
-```ts
-declare module "geotiff-geokeys-to-proj4/main.js" {
-    export * from "geotiff-geokeys-to-proj4";
-}
-```
+Please note that ESM module is not transpiled to ES3. Use a bundler to transpile your app to whatever ES version you need.
 
 ## General usage
 

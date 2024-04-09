@@ -328,3 +328,5 @@ export function toProj4(geoKeys: GeoKeys): ProjectionParameters;
  * @return {module:geokeysToProj4.Point} Converted coordinates
  */
 export function convertCoordinates(x: number, y: number, z: number, parameters: Object): Point;
+
+export default { toProj4, convertCoordinates };
