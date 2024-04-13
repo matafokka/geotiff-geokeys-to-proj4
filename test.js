@@ -150,7 +150,18 @@ let testKeys = [
 		ProjLinearUnitsGeoKey: 9001,
 		VerticalCSTypeGeoKey: 8051,
 		proj4: "+proj=utm +zone=32 +datum=WGS84 +units=m +no_defs",
-	  }
+	},
+	{
+		name: "From #7",
+		GTModelTypeGeoKey: 1,
+		GTRasterTypeGeoKey: 1,
+		GTCitationGeoKey: "WGS 84 / Pseudo-Mercator",
+		GeogCitationGeoKey: "WGS 84",
+		GeogAngularUnitsGeoKey: 9102,
+		ProjectedCSTypeGeoKey: 3857,
+		ProjLinearUnitsGeoKey: 9001,
+		proj4: "+proj=merc +a=6378137 +b=6378137 +lat_ts=0 +lon_0=0 +x_0=0 +y_0=0 +k=1 +units=m +nadgrids=@null +wktext +no_defs",
+	}
 ];
 
 // Test runner

@@ -401,7 +401,7 @@ module.exports = {
 				tokens[kvArr[0].trim()] = kvArr[1].trim();
 		}
 
-		override(tokens); // Apply all necessary overrides
+		override(tokens, geoKeys); // Apply all necessary overrides
 
 		// Build final string
 
