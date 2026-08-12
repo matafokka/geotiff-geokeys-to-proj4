@@ -1,405 +1,151 @@
 <!DOCTYPE html>
-
-<html lang="en">
-<head>
-	<meta charset="utf-8">
-	<meta name="viewport" content="width=device-width">
-	<title>geotiff-geokeys-to-proj4 Index</title>
-
-	<!--[if lt IE 9]>
-	<script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
-	<![endif]-->
-	<link type="text/css" rel="stylesheet" href="styles/sunlight.default.css">
-
-	<link type="text/css" rel="stylesheet" href="styles/site.cerulean.css">
-
-</head>
-
-<body>
-
-<div class="navbar navbar-default navbar-fixed-top ">
-<div class="container">
-	<div class="navbar-header">
-		<a class="navbar-brand" href="index.html">geotiff-geokeys-to-proj4</a>
-		<button class="navbar-toggle" type="button" data-toggle="collapse" data-target="#topNavigation">
-			<span class="icon-bar"></span>
-			<span class="icon-bar"></span>
-			<span class="icon-bar"></span>
-        </button>
-	</div>
-	<div class="navbar-collapse collapse" id="topNavigation">
-		<ul class="nav navbar-nav">
-			
-			<li class="dropdown">
-				<a href="modules.list.html" class="dropdown-toggle" data-toggle="dropdown">Modules<b class="caret"></b></a>
-				<ul class="dropdown-menu inline">
-					<li><a href="module-geokeysToProj4.html">geokeysToProj4</a></li>
-				</ul>
-			</li>
-			
-		</ul>
-        
-            <div class="col-sm-3 col-md-3">
-                <form class="navbar-form" role="search">
-                    <div class="input-group">
-                        <input type="text" class="form-control" placeholder="Search" name="q" id="search-input">
-                        <div class="input-group-btn">
-                            <button class="btn btn-default" id="search-submit"><i class="glyphicon glyphicon-search"></i></button>
-                        </div>
-                    </div>
-                </form>
-            </div>
-        
-	</div>
-
-</div>
-</div>
-
-
-<div class="container" id="toc-content">
-<div class="row">
-
-	
-	<div class="col-md-8">
-	
-		<div id="main">
-			
-
-	
-	
-
-
-
-
-
-
-
-
-
-
-
-	
-	
-
-
-
-
-
-    <section class="readme-section">
-        <article><h1>geotiff-geokeys-to-proj4</h1>
-<p>This library converts GeoTIFF's geokeys to Proj4 string, so you can <a href="#why-do-i-need-it">consume</a> your images.</p>
-<p>Intended to be used with <a href="https://github.com/geotiffjs/geotiff.js/">geotiff.js</a> and <a href="https://github.com/proj4js/proj4js">proj4js</a>, it's basically a glue between these libraries, but it can be used with alternatives.</p>
-<p>Designed for both frontend and backend. Supports ES3+ environments <em>(any browser from 2000 year)</em>. Size is ~1.46 Mb <em>(despite what npm says, it counts both sources and bundle)</em>.</p>
-<p>Grab it from npm: <code>npm install geotiff-geokeys-to-proj4</code>.</p>
-<h2>Looking for maintainers!</h2>
-<p>EPSG updates their database once in a month, these updates needs to be integrated into this library. For now, there's no one to perform this task. If you want to help, please, see <a href="#manually-updating-from-epsg-database">how to update the database</a>, create an issue to let me know that we've got a maintainer, and submit pull requests with the updated files.</p>
-<h1><a href="https://matafokka.github.io/geotiff-geokeys-to-proj4/module-geokeysToProj4.html">Docs</a></h1>
-<h1>Demo &amp; example</h1>
-<p><a href="https://matafokka.github.io/geotiff-3d-dem-viewer">GeoTIFF 3D DEM Viewer</a> demonstrates how to read GeoTIFF files and display them in <a href="https://cesium.com/">CesiumJS</a> as 3D terrain. Check the <a href="https://github.com/matafokka/geotiff-3d-dem-viewer">source code</a> for more. Files that'll interest you the most: <a href="https://github.com/matafokka/geotiff-3d-dem-viewer/blob/master/src/components/Menu.tsx">initial image setup</a>, <a href="https://github.com/matafokka/geotiff-3d-dem-viewer/blob/master/src/etc/GeoTIFFManager.ts">where all interesting stuff is</a>.</p>
-<p>Still, be sure to check out usage example below!</p>
-<h1>Usage</h1>
-<h2>Importing this library</h2>
-<p>In <strong>Node.js</strong> or with <strong>bundler</strong>: <code>const geokeysToProj4 = require(&quot;geotiff-geokeys-to-proj4&quot;);</code></p>
-<p>In <strong>TypeScript</strong>: <code>import geokeysToProj4 from &quot;geotiff-geokeys-to-proj4&quot;;</code> or <code>import { toProj4, convertCoordinates } from &quot;geotiff-geokeys-to-proj4&quot;;</code></p>
-<p>In a <strong>browser</strong>: <code>&lt;script src=&quot;path/to/main-dist-iife.js&quot;&gt;&lt;/script&gt;</code> - after that you'll have <code>geokeysToProj4</code> global variable.</p>
-<p>Please note that ESM module is not transpiled to ES3. Use a bundler to transpile your app to whatever ES version you need.</p>
-<h2>General usage</h2>
-<p>In general, you want to:</p>
-<ol>
-<li>Read geokeys.</li>
-<li>Pass them to <code>geokeysToProj4.toProj4()</code> (let's call returned object <code>projObj</code>).</li>
-<li>Pass <code>projObj.proj4</code> (which is Proj4 string) to proj4js.</li>
-<li>Convert pixel coordinates and pixel value <em>(Z coordinate; DEM or geocentric CRS only; for other files, use any number, it doesn't matter)</em> to CRS coordinates (let's call them <code>crsX</code>, <code>crsY</code> and <code>crsZ</code>).</li>
-<li>Convert CRS coordinates to usable units <em>(in most cases, meters or degrees, but GeoTIFF allows speed, angular speed, and scale)</em>: <code>geokeysToProj4(crsX, crsY, crsZ, projObj.coordinatesConversionParameters)</code>.</li>
-<li>The returned object will contain <code>x, y, z</code> coordinates which are ready to be projected with proj4js. So project them.</li>
-</ol>
-<p>Of course, you can alter this workflow to use this library with any other (presumably, server-side) software.</p>
-<p>Let's demonstrate everything from start to finish on an example with <a href="https://github.com/geotiffjs/geotiff.js/">geotiff.js</a> and <a href="https://github.com/proj4js/proj4js">proj4js</a>:</p>
-<pre class="prettyprint source lang-js"><code>// Import all the stuff
-const geotiff = require(&quot;geotiff&quot;); // geotiff.js
-const proj4 = require(&quot;proj4&quot;); // proj4js
-const geokeysToProj4 = require(&quot;geotiff-geokeys-to-proj4&quot;); // This library
-
-// Let's wrap our example in a function
-async function workWithGeoTIFF(blob) {
-    // Read image. See geotiff.js docs on what all of that means.
-    const tiff = await geotiff.fromBlob(blob); // Read blob
-    const imageCount = await tiff.getImageCount(); // Get image count
-
-    // Work with each image in a file
-    for (let i = 0; i &lt; imageCount; i++) {
-        const image = await tiff.getImage(i); // Get image instance
-        const geoKeys = image.getGeoKeys(); // Get geokeys
-        const projObj = geokeysToProj4.toProj4(geoKeys); // Convert geokeys to proj4 string
-        // The function above returns an object where proj4 property is a Proj4 string and coordinatesConversionParameters is conversion parameters which we'll use later
-        const projection = proj4(projObj.proj4, &quot;WGS84&quot;); // Project our GeoTIFF to WGS84
-
-        // Now you may want to deal with errors. Unfortunately, errors are unavoidable, but in most cases, you can warn the user or just continue on.
-        // All occurred errors will be in projObj.errors object. See the docs for more information:
-        // https://matafokka.github.io/geotiff-geokeys-to-proj4/module-geokeysToProj4.html#.ConversionErrors__anchor
-
-        // Work with pixels
-        // For looping over pixels
-        const width = image.getWidth();
-        const height = image.getHeight();
-        // Pixel dimensions for converting image coordinates to source CRS coordinates
-        const [originX, originY] = image.getOrigin();
-        const [xSize, ySize] = image.getResolution();
-
-        // Read rows
-        for (let y = 0; y &lt; height; y++) {
-            // Read one row of pixels. Easier to deal with coordinates, takes less RAM.
-            const raster = await image.readRasters({window: [0, y, width, y + 1]});
-            const color0 = raster[0]; // Raster is a TypedArray where elements are colors and their elements are pixel values of that color
-
-            // Read columns. Since we're reading full row, we can replace color0.length with width, but I find color0.length more explicit.
-            for (let x = 0; i &lt; color0.length; x++) {
-
-                // Convert current pixel's coordinates to CRS by:
-                // 1. Multiplying current coordinates by pixel size which will result in distance from top-left corner in CRS units.
-                // 2. Adding this value to top-left corner coordinates which will result in &quot;global&quot; coordinates in CRS units.
-                // This will work because image is transformed by Affine Transformation which preserves parallelism.
-                // Warning: this logic works only for source CRS, target CRS might screw up parallel lines, so pixel dimensions will not be constant!
-                const crsX = originX + x * xSize;
-                const crsY = originY + y * ySize;
-
-                // DEM or geocentric CRS only: Z coordinate is pixel value. You may want to use another band or a combination of bands as Z coordinate.
-                // For other files, you may use any number instead, it doesn't matter.
-                const crsZ = color0[i];
-
-                // Check if coordinates are already in meters (or other &quot;standard&quot; units). If not, convert them. Either:
-
-                // 1. Use convertCoordinates():
-                let point;
-
-                if (projObj.shouldConvertCoordinates) // You can remove this condition, convertCoordinates() will work just fine in any case. Just a bit of time saving when dealing with large files.
-                    point = geokeysToProj4.convertCoordinates(crsX, crsY, crsZ, projObj.coordinatesConversionParameters);
-                else
-                    point = { x: crsX, y: crsY, z: crsZ };
-
-                // 2. Just multiply manually to speed up execution by removing function calls and conditions:
-                point = {
-                    x: crsX * projObj.coordinatesConversionParameters.x,
-                    y: crsY * projObj.coordinatesConversionParameters.y,
-                    z: crsZ * projObj.coordinatesConversionParameters.z,
-                }
-
-                let projectedPoint = projection.forward(point); // Project these coordinates
-                // Work with projected coordinates...
-            }
-        }
-    }
-}
-</code></pre>
-<h1>Known issues</h1>
-<p>I don't know which geokeys should take precedence over which. I did what seems to be logical, but I might be wrong. If you know anything about it, please, create an issue and describe whether I'm wrong (and how to fix it) or right (so I'll remove this text).</p>
-<p>Vertical CRS which use local depth are not supported because reference points are needed. Following has been excluded:</p>
-<ol>
-<li>Vertical CS: 1049 and 1050.</li>
-<li>Vertical CRS: 8378 and 8897.</li>
-</ol>
-<p>Vertical datums are not supported at all because mappings are needed. If you have at least some mappings, please, let me know by creating an issue.</p>
-<h1>Manually updating from EPSG database</h1>
-<p>Unfortunately, <a href="https://epsg.org">epsg.org</a> doesn't provide public access to their database. You need to register an account, and only then you'll be able to download database. Since all of that is for the users and not for bots, both client and server might change in the future, so there's no point in writing self-update script.</p>
-<p>To update:</p>
-<ol>
-<li>Clone this repo.</li>
-<li>Run <code>npm install</code> on cloned repo.</li>
-<li>Set up <a href="https://www.postgresql.org/">PostgreSQL</a> server <em>(other RDBMS are not supported)</em>. Default configuration should be fine, just create a user and a database for that user.</li>
-<li>Head over to <a href="https://epsg.org/download-dataset.html">here</a>, create an account (if you don't have one) and download PostgreSQL scripts.</li>
-<li>Extract downloaded scripts to <code>postgres_prep</code> directory.</li>
-<li>Run <code>npm run update-all</code> to update everything and rebuilds the project. See arguments below. <strong>Warning: this script utilizes <code>epsg</code> schema and will erase it completely! It's hardcoded and can't be changed.</strong> To avoid data loss, create a separate database solely to run this script.</li>
-</ol>
-<p>There're actually two scripts: <code>update-all</code> which has been described above and <code>update-existing</code> which will update project files from existing database. Both of these scripts accepts following arguments:</p>
-<pre class="prettyprint source"><code>--host          - PostgreSQL host                      - Defaults to &quot;localhost&quot;
---port          - PostgreSQL port                      - Defaults to &quot;5432&quot;
---database      - Database containing &quot;epsg&quot; schema    - Defaults to &quot;postgres&quot;
---user          - PostgreSQL database user             - Defaults to &quot;user&quot;
---password      - Password for the user                - Defaults to &quot;12345&quot;
-</code></pre>
-<p>Arguments passed to npm scripts in following manner: <code>npm run [script name] -- [script arguments]</code>, for example: <code>npm run update-all -- --user myuser --password mypassword</code>. Note the <code>--</code> separator, it should always present when using this library's scripts.</p>
-<h1>FAQ</h1>
-<h2>Why do I need it?</h2>
-<p>Every GeoTIFF is bound to some kind of Coordinate Reference System (CRS) which in combination with georeferencing data defines where pixel coordinates are on the Earth. These CRS are quite different from what you can find, let's say, in Leaflet or OpenLayers which uses WGS <em>(which is CRS too)</em> by default.</p>
-<p>So you need to convert image coordinates from one CRS to another. <a href="https://github.com/proj4js/proj4js">proj4js</a> is the best tool to do that. You need to supply an input and output CRS <em>(which Proj4 calls a projection; yes, terminology is quite confusing)</em> to it in form of a string.</p>
-<p>For output, you can specify whatever your software is using. But input is defined by geokeys <em>(information embedded into GeoTIFF file)</em>. Geokeys are really hard to handle. This library will create an input Proj4 string for you.</p>
-<p>How to perform all of that is described in <a href="#general-usage">example</a> above.</p>
-<p>Without these procedures, you'll get wrong results.</p>
-<h2>How is it different from <a href="https://github.com/derhuerst/epsg-index">epsg-index</a>?</h2>
-<p>epsg-index only provides projections definitions, GeoTIFF uses more than that.</p>
-<h2>How does it compare to already existing and battle-proven libraries such as GDAL?</h2>
-<p>Pros:</p>
-<ol>
-<li>Can be used in a browser. There're no alternatives for now except for compiling another library to WebAssembly. Even then this library wins because it can run in ES3 environment (any browser from 2000 year).</li>
-<li>Easier to use in Node since this library is written in pure JS. Non-JS libraries requires a wrapper or use of CLI.</li>
-</ol>
-<p>Cons:</p>
-<ol>
-<li>Libraries such as GDAL are, in fact, already battle-proven. Since this library is new, I'm the sole developer for now, and I'm not a cartographer, there might be some bugs.</li>
-<li>Since there're no maintainers to update database, more popular libraries might have newer data, though, it shouldn't make big difference.</li>
-</ol>
-<p><strong>To summarize:</strong> use this library for a frontend, but existing libraries with a wrapper might be better for a backend;</p>
-<h2>The example above can be put in a function that takes a callback. Why didn't you do that?</h2>
-<p>Because:</p>
-<ol>
-<li>It's not the goal of this library.</li>
-<li>It'll slow down reading which is already quite slow.</li>
-<li>You'll still need to understand how all this stuff works and be able to modify the example when needed.</li>
-</ol>
-<h2>This library produces wrong results!</h2>
-<p>This library only maps geokeys to their Proj4 definitions and builds a final Proj4 string. It doesn't perform any projections.</p>
-<p>If you've encountered a bug, please, take a look at Proj4 string first and compare it to one generated by a professional GIS. If something is fundamentally wrong, it's the issue of this library. Otherwise, there's something wrong with Proj4.</p>
-<p>If you're comparing results with what <a href="https://epsg.io">epsg.io</a> says, note that while <a href="https://epsg.io">epsg.io</a> is mostly right, it's not an official data source. For example, <a href="https://epsg.io">epsg.io</a> maps CRS <code>21780</code> to <code>+proj=somerc</code>, but the right projection seems to be <code>+proj=omerc</code>. If you're not sure how to verify which Proj4 string is correct, feel free to message me anyway.</p>
-<p>Please, don't report redundant parameters <em>(for example, <code>+a</code> and <code>+b</code> that are the same as <code>+ellps</code> provides)</em> as a bug. This behavior simplifies development, increases performance by not making useless comparisons and ensures that the right parameters are used.</p>
-<p>Missing <code>+units</code> is also not a bug, you're converting coordinates to meters by using <code>geokeysToProj4.convertCoordinates()</code>.</p>
-<h2>What are the sources for Proj4 strings?</h2>
-<p>Official database from epsg.org is the main data source. Data is enriched by some <a href="EPSG/data/AdditionalCRS.js">additional sources</a>. <a href="https://epsg.io">epsg.io</a> is used to selectively check if Proj4 strings are correct.</p>
-<h1>Contributing</h1>
-<p>You can contribute by solving <a href="#known-issues">described issues</a> or by <a href="#looking-for-maintainers">maintaining the database</a>.</p>
-<h1>Related projects</h1>
-<ol>
-<li><a href="https://github.com/geotiffjs/geotiff.js/">geotiff.js</a> is a library that can read GeoTIFF images.</li>
-<li><a href="https://github.com/proj4js/proj4js">proj4js</a> is a port of Proj4 to JS.</li>
-<li><a href="https://github.com/derhuerst/epsg-index">epsg-index</a> is a machine-readable index of all EPSG coordinate reference systems.</li>
-<li><a href="https://epsg.io">epsg.io</a> is a website that provides all the EPSG stuff mostly in human-readable form, and an API to access it.</li>
-<li><a href="https://github.com/GeoTIFF/geokeys-to-proj4js">geokeys-to-proj4js</a> is a project with the same goal but far from to be finished, and it looks abandoned.</li>
-</ol></article>
-    </section>
-
-
-
-
-
-
-
-		</div>
-	</div>
-
-	<div class="clearfix"></div>
-
-	
-		<div class="col-md-3">
-			<div id="toc" class="col-md-3 hidden-xs hidden-sm hidden-md"></div>
-		</div>
-	
-
-</div>
-</div>
-
-
-    <div class="modal fade" id="searchResults">
-      <div class="modal-dialog">
-        <div class="modal-content">
-          <div class="modal-header">
-            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-            <h4 class="modal-title">Search results</h4>
-          </div>
-          <div class="modal-body"></div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-          </div>
-        </div><!-- /.modal-content -->
-      </div><!-- /.modal-dialog -->
-    </div>
-
-
-<footer>
-
-	<div style='width: 100%; text-align: center;'><a href='https://github.com/matafokka'>(c) matafokka</a></div>
-
-
-<span class="jsdoc-message">
-	Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.6.6</a>
-	
-		on 2024-04-13T07:54:30+00:00
-	
-	using the <a href="https://github.com/docstrap/docstrap">DocStrap template</a>.
-</span>
-</footer>
-
-<script src="scripts/docstrap.lib.js"></script>
-<script src="scripts/toc.js"></script>
-
-    <script type="text/javascript" src="scripts/fulltext-search-ui.js"></script>
-
-
-<script>
-$( function () {
-	$( "[id*='$']" ).each( function () {
-		var $this = $( this );
-
-		$this.attr( "id", $this.attr( "id" ).replace( "$", "__" ) );
-	} );
-
-	$( ".tutorial-section pre, .readme-section pre, pre.prettyprint.source" ).each( function () {
-		var $this = $( this );
-
-		var example = $this.find( "code" );
-		exampleText = example.html();
-		var lang = /{@lang (.*?)}/.exec( exampleText );
-		if ( lang && lang[1] ) {
-			exampleText = exampleText.replace( lang[0], "" );
-			example.html( exampleText );
-			lang = lang[1];
-		} else {
-			var langClassMatch = example.parent()[0].className.match(/lang\-(\S+)/);
-			lang = langClassMatch ? langClassMatch[1] : "javascript";
-		}
-
-		if ( lang ) {
-
-			$this
-			.addClass( "sunlight-highlight-" + lang )
-			.addClass( "linenums" )
-			.html( example.html() );
-
-		}
-	} );
-
-	Sunlight.highlightAll( {
-		lineNumbers : true,
-		showMenu : true,
-		enableDoclinks : true
-	} );
-
-	$.catchAnchorLinks( {
-        navbarOffset: 10
-	} );
-	$( "#toc" ).toc( {
-		anchorName  : function ( i, heading, prefix ) {
-			return $( heading ).attr( "id" ) || ( prefix + i );
-		},
-		selectors   : "#toc-content h1,#toc-content h2,#toc-content h3,#toc-content h4",
-		showAndHide : false,
-		smoothScrolling: true
-	} );
-
-	$( "#main span[id^='toc']" ).addClass( "toc-shim" );
-	$( '.dropdown-toggle' ).dropdown();
-
-    $( "table" ).each( function () {
-      var $this = $( this );
-      $this.addClass('table');
-    } );
-
-} );
-</script>
-
-
-
-<!--Navigation and Symbol Display-->
-
-
-<!--Google Analytics-->
-
-
-
-    <script type="text/javascript">
-        $(document).ready(function() {
-            SearcherDisplay.init();
-        });
-    </script>
-
-
-</body>
+<html lang="en-US" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>geotiff-geokeys-to-proj4</title>
+    <meta name="description" content="geotiff-geokeys-to-proj4 documentation website. This is a library that converts GeoTIFF's geokeys to Proj4 string.">
+    <meta name="generator" content="VitePress v1.6.4">
+    <link rel="preload stylesheet" href="/geotiff-geokeys-to-proj4/assets/style.BmKdTT-0.css" as="style">
+    <link rel="preload stylesheet" href="/geotiff-geokeys-to-proj4/vp-icons.css" as="style">
+    
+    <script type="module" src="/geotiff-geokeys-to-proj4/assets/app.CyVsaUYs.js"></script>
+    <link rel="preload" href="/geotiff-geokeys-to-proj4/assets/inter-roman-latin.Di8DUHzh.woff2" as="font" type="font/woff2" crossorigin="">
+    <link rel="modulepreload" href="/geotiff-geokeys-to-proj4/assets/chunks/theme.C8I33CPH.js">
+    <link rel="modulepreload" href="/geotiff-geokeys-to-proj4/assets/chunks/framework.Ca2fviPJ.js">
+    <link rel="modulepreload" href="/geotiff-geokeys-to-proj4/assets/index.md.Cz35PEkI.lean.js">
+    <link rel="shortcut icon" type="image/svg+xml" href="/favicon.svg" sizes="512x512">
+    <link rel="icon" href="/favicon.png" sizes="512x512">
+    <link rel="icon" href="/favicon.ico" sizes="256x256">
+    <meta property="og:locale" content="en">
+    <meta name="robots" content="all">
+    <meta name="twitter:card" content="summary">
+    <meta property="og:image" content="/splash.png">
+    <meta name="twitter:image" content="/splash.png">
+    <meta property="og:image:type" content="image/png">
+    <meta name="twitter:image:type" content="image/png">
+    <meta property="og:image:width" content="1200">
+    <meta name="twitter:image:width" content="1200">
+    <meta property="og:image:height" content="600">
+    <meta name="twitter:image:height" content="600">
+    <script id="check-dark-mode">(()=>{const e=localStorage.getItem("vitepress-theme-appearance")||"auto",a=window.matchMedia("(prefers-color-scheme: dark)").matches;(!e||e==="auto"?a:e==="dark")&&document.documentElement.classList.add("dark")})();</script>
+    <script id="check-mac-os">document.documentElement.classList.toggle("mac",/Mac|iPhone|iPod|iPad/i.test(navigator.platform));</script>
+    <link rel="canonical" href="https://matafokka.github.io/geotiff-geokeys-to-proj4/">
+    <meta property="og:title" content="geotiff-geokeys-to-proj4">
+    <meta property="og:description" content="geotiff-geokeys-to-proj4 documentation website. This is a library that converts GeoTIFF's geokeys to Proj4 string.">
+    <meta name="twitter:title" content="geotiff-geokeys-to-proj4">
+    <meta name="twitter:description" content="geotiff-geokeys-to-proj4 documentation website. This is a library that converts GeoTIFF's geokeys to Proj4 string.">
+  </head>
+  <body>
+    <div id="app"><div class="Layout" data-v-5d98c3a5><!--[--><!--]--><!--[--><span tabindex="-1" data-v-0b0ada53></span><a href="#VPContent" class="VPSkipLink visually-hidden" data-v-0b0ada53>Skip to content</a><!--]--><!----><header class="VPNav" data-v-5d98c3a5 data-v-ae24b3ad><div class="VPNavBar" data-v-ae24b3ad data-v-6aa21345><div class="wrapper" data-v-6aa21345><div class="container" data-v-6aa21345><div class="title" data-v-6aa21345><div class="VPNavBarTitle has-sidebar" data-v-6aa21345 data-v-1168a8e4><a class="title" href="/geotiff-geokeys-to-proj4/" data-v-1168a8e4><!--[--><!--]--><!--[--><img class="VPImage logo" src="/geotiff-geokeys-to-proj4/favicon.svg" alt data-v-8426fc1a><!--]--><span data-v-1168a8e4>geotiff-geokeys-to-proj4</span><!--[--><!--]--></a></div></div><div class="content" data-v-6aa21345><div class="content-body" data-v-6aa21345><!--[--><!--]--><div class="VPNavBarSearch search" data-v-6aa21345><!--[--><!----><div id="local-search"><button type="button" class="DocSearch DocSearch-Button" aria-label="Search"><span class="DocSearch-Button-Container"><span class="vp-icon DocSearch-Search-Icon"></span><span class="DocSearch-Button-Placeholder">Search</span></span><span class="DocSearch-Button-Keys"><kbd class="DocSearch-Button-Key"></kbd><kbd class="DocSearch-Button-Key">K</kbd></span></button></div><!--]--></div><!----><!----><div class="VPNavBarAppearance appearance" data-v-6aa21345 data-v-6c893767><button class="VPSwitch VPSwitchAppearance" type="button" role="switch" title aria-checked="false" data-v-6c893767 data-v-5337faa4 data-v-1d5665e3><span class="check" data-v-1d5665e3><span class="icon" data-v-1d5665e3><!--[--><span class="vpi-sun sun" data-v-5337faa4></span><span class="vpi-moon moon" data-v-5337faa4></span><!--]--></span></span></button></div><div class="VPSocialLinks VPNavBarSocialLinks social-links" data-v-6aa21345 data-v-0394ad82 data-v-7bc22406><!--[--><a class="VPSocialLink no-icon" href="https://github.com/matafokka/geotiff-geokeys-to-proj4" aria-label="github" target="_blank" rel="noopener" data-v-7bc22406 data-v-bd121fe5><span class="vpi-social-github"></span></a><!--]--></div><div class="VPFlyout VPNavBarExtra extra" data-v-6aa21345 data-v-bb2aa2f0 data-v-cf11d7a2><button type="button" class="button" aria-haspopup="true" aria-expanded="false" aria-label="extra navigation" data-v-cf11d7a2><span class="vpi-more-horizontal icon" data-v-cf11d7a2></span></button><div class="menu" data-v-cf11d7a2><div class="VPMenu" data-v-cf11d7a2 data-v-b98bc113><!----><!--[--><!--[--><!----><div class="group" data-v-bb2aa2f0><div class="item appearance" data-v-bb2aa2f0><p class="label" data-v-bb2aa2f0>Appearance</p><div class="appearance-action" data-v-bb2aa2f0><button class="VPSwitch VPSwitchAppearance" type="button" role="switch" title aria-checked="false" data-v-bb2aa2f0 data-v-5337faa4 data-v-1d5665e3><span class="check" data-v-1d5665e3><span class="icon" data-v-1d5665e3><!--[--><span class="vpi-sun sun" data-v-5337faa4></span><span class="vpi-moon moon" data-v-5337faa4></span><!--]--></span></span></button></div></div></div><div class="group" data-v-bb2aa2f0><div class="item social-links" data-v-bb2aa2f0><div class="VPSocialLinks social-links-list" data-v-bb2aa2f0 data-v-7bc22406><!--[--><a class="VPSocialLink no-icon" href="https://github.com/matafokka/geotiff-geokeys-to-proj4" aria-label="github" target="_blank" rel="noopener" data-v-7bc22406 data-v-bd121fe5><span class="vpi-social-github"></span></a><!--]--></div></div></div><!--]--><!--]--></div></div></div><!--[--><!--]--><button type="button" class="VPNavBarHamburger hamburger" aria-label="mobile navigation" aria-expanded="false" aria-controls="VPNavScreen" data-v-6aa21345 data-v-e5dd9c1c><span class="container" data-v-e5dd9c1c><span class="top" data-v-e5dd9c1c></span><span class="middle" data-v-e5dd9c1c></span><span class="bottom" data-v-e5dd9c1c></span></span></button></div></div></div></div><div class="divider" data-v-6aa21345><div class="divider-line" data-v-6aa21345></div></div></div><!----></header><div class="VPLocalNav has-sidebar empty" data-v-5d98c3a5 data-v-a6f0e41e><div class="container" data-v-a6f0e41e><button class="menu" aria-expanded="false" aria-controls="VPSidebarNav" data-v-a6f0e41e><span class="vpi-align-left menu-icon" data-v-a6f0e41e></span><span class="menu-text" data-v-a6f0e41e>Menu</span></button><div class="VPLocalNavOutlineDropdown" style="--vp-vh:0px;" data-v-a6f0e41e data-v-8a42e2b4><button data-v-8a42e2b4>Return to top</button><!----></div></div></div><aside class="VPSidebar" data-v-5d98c3a5 data-v-319d5ca6><div class="curtain" data-v-319d5ca6></div><nav class="nav" id="VPSidebarNav" aria-labelledby="sidebar-aria-label" tabindex="-1" data-v-319d5ca6><span class="visually-hidden" id="sidebar-aria-label" data-v-319d5ca6> Sidebar Navigation </span><!--[--><!--]--><!--[--><div class="no-transition group" data-v-c40bc020><section class="VPSidebarItem level-0 has-active" data-v-c40bc020 data-v-b3fd67f8><!----><div class="items" data-v-b3fd67f8><!--[--><div class="VPSidebarItem level-1 collapsible is-link" data-v-b3fd67f8><div class="item" data-v-b3fd67f8><div class="indicator" data-v-b3fd67f8></div><a class="VPLink link link" href="/geotiff-geokeys-to-proj4/" data-v-b3fd67f8><!--[--><p class="text" data-v-b3fd67f8>Home</p><!--]--></a><!----></div><!----></div><!--]--></div></section></div><div class="no-transition group" data-v-c40bc020><section class="VPSidebarItem level-0" data-v-c40bc020 data-v-b3fd67f8><div class="item" role="button" tabindex="0" data-v-b3fd67f8><div class="indicator" data-v-b3fd67f8></div><h2 class="text" data-v-b3fd67f8>API Reference</h2><!----></div><div class="items" data-v-b3fd67f8><!--[--><section class="VPSidebarItem level-1 collapsible" data-v-b3fd67f8><div class="item" role="button" tabindex="0" data-v-b3fd67f8><div class="indicator" data-v-b3fd67f8></div><h3 class="text" data-v-b3fd67f8>Interfaces</h3><div class="caret" role="button" aria-label="toggle section" tabindex="0" data-v-b3fd67f8><span class="vpi-chevron-right caret-icon" data-v-b3fd67f8></span></div></div><div class="items" data-v-b3fd67f8><!--[--><div class="VPSidebarItem level-2 is-link" data-v-b3fd67f8><div class="item" data-v-b3fd67f8><div class="indicator" data-v-b3fd67f8></div><a class="VPLink link link" href="/geotiff-geokeys-to-proj4/api/interfaces/ConversionErrors.html" data-v-b3fd67f8><!--[--><p class="text" data-v-b3fd67f8>ConversionErrors</p><!--]--></a><!----></div><!----></div><div class="VPSidebarItem level-2 is-link" data-v-b3fd67f8><div class="item" data-v-b3fd67f8><div class="indicator" data-v-b3fd67f8></div><a class="VPLink link link" href="/geotiff-geokeys-to-proj4/api/interfaces/ConvertedCoordinate.html" data-v-b3fd67f8><!--[--><p class="text" data-v-b3fd67f8>ConvertedCoordinate</p><!--]--></a><!----></div><!----></div><div class="VPSidebarItem level-2 is-link" data-v-b3fd67f8><div class="item" data-v-b3fd67f8><div class="indicator" data-v-b3fd67f8></div><a class="VPLink link link" href="/geotiff-geokeys-to-proj4/api/interfaces/CoordinateConversionParameters.html" data-v-b3fd67f8><!--[--><p class="text" data-v-b3fd67f8>CoordinateConversionParameters</p><!--]--></a><!----></div><!----></div><div class="VPSidebarItem level-2 is-link" data-v-b3fd67f8><div class="item" data-v-b3fd67f8><div class="indicator" data-v-b3fd67f8></div><a class="VPLink link link" href="/geotiff-geokeys-to-proj4/api/interfaces/GeoKeys.html" data-v-b3fd67f8><!--[--><p class="text" data-v-b3fd67f8>GeoKeys</p><!--]--></a><!----></div><!----></div><div class="VPSidebarItem level-2 is-link" data-v-b3fd67f8><div class="item" data-v-b3fd67f8><div class="indicator" data-v-b3fd67f8></div><a class="VPLink link link" href="/geotiff-geokeys-to-proj4/api/interfaces/SourceCoordinate.html" data-v-b3fd67f8><!--[--><p class="text" data-v-b3fd67f8>SourceCoordinate</p><!--]--></a><!----></div><!----></div><!--]--></div></section><section class="VPSidebarItem level-1 collapsible" data-v-b3fd67f8><div class="item" role="button" tabindex="0" data-v-b3fd67f8><div class="indicator" data-v-b3fd67f8></div><h3 class="text" data-v-b3fd67f8>Type Aliases</h3><div class="caret" role="button" aria-label="toggle section" tabindex="0" data-v-b3fd67f8><span class="vpi-chevron-right caret-icon" data-v-b3fd67f8></span></div></div><div class="items" data-v-b3fd67f8><!--[--><div class="VPSidebarItem level-2 is-link" data-v-b3fd67f8><div class="item" data-v-b3fd67f8><div class="indicator" data-v-b3fd67f8></div><a class="VPLink link link" href="/geotiff-geokeys-to-proj4/api/type-aliases/CoordinateUnits.html" data-v-b3fd67f8><!--[--><p class="text" data-v-b3fd67f8>CoordinateUnits</p><!--]--></a><!----></div><!----></div><div class="VPSidebarItem level-2 is-link" data-v-b3fd67f8><div class="item" data-v-b3fd67f8><div class="indicator" data-v-b3fd67f8></div><a class="VPLink link link" href="/geotiff-geokeys-to-proj4/api/type-aliases/GeokeysNotSupportedErrors.html" data-v-b3fd67f8><!--[--><p class="text" data-v-b3fd67f8>GeokeysNotSupportedErrors</p><!--]--></a><!----></div><!----></div><!--]--></div></section><section class="VPSidebarItem level-1 collapsible" data-v-b3fd67f8><div class="item" role="button" tabindex="0" data-v-b3fd67f8><div class="indicator" data-v-b3fd67f8></div><h3 class="text" data-v-b3fd67f8>Functions</h3><div class="caret" role="button" aria-label="toggle section" tabindex="0" data-v-b3fd67f8><span class="vpi-chevron-right caret-icon" data-v-b3fd67f8></span></div></div><div class="items" data-v-b3fd67f8><!--[--><div class="VPSidebarItem level-2 is-link" data-v-b3fd67f8><div class="item" data-v-b3fd67f8><div class="indicator" data-v-b3fd67f8></div><a class="VPLink link link" href="/geotiff-geokeys-to-proj4/api/functions/convertCoordinates.html" data-v-b3fd67f8><!--[--><p class="text" data-v-b3fd67f8>convertCoordinates</p><!--]--></a><!----></div><!----></div><div class="VPSidebarItem level-2 is-link" data-v-b3fd67f8><div class="item" data-v-b3fd67f8><div class="indicator" data-v-b3fd67f8></div><a class="VPLink link link" href="/geotiff-geokeys-to-proj4/api/functions/toProj4.html" data-v-b3fd67f8><!--[--><p class="text" data-v-b3fd67f8>toProj4</p><!--]--></a><!----></div><!----></div><!--]--></div></section><!--]--></div></section></div><!--]--><!--[--><!--]--></nav></aside><div class="VPContent has-sidebar" id="VPContent" data-v-5d98c3a5 data-v-1428d186><div class="VPDoc has-sidebar has-aside" data-v-1428d186 data-v-39a288b8><!--[--><!--]--><div class="container" data-v-39a288b8><div class="aside" data-v-39a288b8><div class="aside-curtain" data-v-39a288b8></div><div class="aside-container" data-v-39a288b8><div class="aside-content" data-v-39a288b8><div class="VPDocAside" data-v-39a288b8 data-v-3f215769><!--[--><!--]--><!--[--><!--]--><nav aria-labelledby="doc-outline-aria-label" class="VPDocAsideOutline" data-v-3f215769 data-v-a5bbad30><div class="content" data-v-a5bbad30><div class="outline-marker" data-v-a5bbad30></div><div aria-level="2" class="outline-title" id="doc-outline-aria-label" role="heading" data-v-a5bbad30>On this page</div><ul class="VPDocOutlineItem root" data-v-a5bbad30 data-v-b933a997><!--[--><!--]--></ul></div></nav><!--[--><!--]--><div class="spacer" data-v-3f215769></div><!--[--><!--]--><!----><!--[--><!--]--><!--[--><!--]--></div></div></div></div><div class="content" data-v-39a288b8><div class="content-container" data-v-39a288b8><!--[--><!--]--><main class="main" data-v-39a288b8><div style="position:relative;" class="vp-doc _geotiff-geokeys-to-proj4_" data-v-39a288b8><div><h1 id="geotiff-geokeys-to-proj4" tabindex="-1">geotiff-geokeys-to-proj4 <a class="header-anchor" href="#geotiff-geokeys-to-proj4" aria-label="Permalink to &quot;geotiff-geokeys-to-proj4&quot;">​</a></h1><p>This library converts GeoTIFF&#39;s geokeys to Proj4 string for correct image processing.</p><h2 id="rationale" tabindex="-1">Rationale <a class="header-anchor" href="#rationale" aria-label="Permalink to &quot;Rationale&quot;">​</a></h2><p>Every GeoTIFF has a Coordinate Reference System (CRS). CRS in combination with georeferencing data defines where pixel coordinates physically are on Earth.</p><p>These CRS may be quite different from what you may find in, for example, Leaflet or OpenLayers where WGS <em>(which is a CRS too)</em> is used by default.</p><p>To process the images, you need to convert image coordinates from one CRS to another.</p><p><a href="https://github.com/proj4js/proj4js" target="_blank" rel="noreferrer">proj4js</a> is the simplest tool to do that. Give it an <strong>input CRS</strong> (whatever GeoTIFF is using), an <strong>output CRS</strong> (whatever your software is using), and a <strong>coordinate</strong> on an image. It&#39;ll transform coordinate from input to output CRS in a pinch.</p><p><strong>Note:</strong> Proj4 calls CRS a projection which is quite confusing.</p><p>GeoTIFF encodes CRS information in <strong>geokeys</strong> - key-value pairs. Geokeys are really hard to handle and require external data sources to get transformation parameters from. Here were this library comes in: it already includes all necessary parameters and it&#39;ll convert geokeys to proj4 string.</p><h2 id="features" tabindex="-1">Features <a class="header-anchor" href="#features" aria-label="Permalink to &quot;Features&quot;">​</a></h2><ol><li><p>Intended to be used with <a href="https://github.com/geotiffjs/geotiff.js/" target="_blank" rel="noreferrer">geotiff.js</a> and <a href="https://github.com/proj4js/proj4js" target="_blank" rel="noreferrer">proj4js</a>.</p><p>It&#39;s basically a glue between these libraries. Can be used with the alternatives <em>(if any exist)</em>.</p></li><li><p>Designed for everything: frontend, backend, desktop apps, mobile apps, etc.</p></li><li><p>Built with modern syntax to take advantage of modern environments.</p></li><li><p>Can be transpiled down to ES3 <em>(any browser from year 2000)</em>.</p></li><li><p>Sizes at ≈1.1 Mb <em>(vs ≈20 Mb compared to existing libraries)</em>.</p></li></ol><h2 id="installation" tabindex="-1">Installation <a class="header-anchor" href="#installation" aria-label="Permalink to &quot;Installation&quot;">​</a></h2><p>Install the whole trio: <code>npm i geotiff proj4 geotiff-geokeys-to-proj4</code></p><p>Or just this library: <code>npm i geotiff-geokeys-to-proj4</code>.</p><h2 id="example-usage" tabindex="-1">Example usage <a class="header-anchor" href="#example-usage" aria-label="Permalink to &quot;Example usage&quot;">​</a></h2><p>This is an example of image processing with <a href="https://github.com/geotiffjs/geotiff.js/" target="_blank" rel="noreferrer">geotiff.js</a> and <a href="https://github.com/proj4js/proj4js" target="_blank" rel="noreferrer">proj4js</a>:</p><div class="language-ts vp-adaptive-theme"><button title="Copy Code" class="copy"></button><span class="lang">ts</span><pre class="shiki shiki-themes github-light github-dark vp-code" tabindex="0"><code><span class="line"><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">import</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;"> { fromBlob, </span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">type</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;"> GeoTIFFImage } </span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">from</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;"> &quot;geotiff&quot;</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">;</span></span>
+<span class="line"><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">import</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;"> proj4 </span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">from</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;"> &quot;proj4&quot;</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">;</span></span>
+<span class="line"><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">import</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;"> {</span></span>
+<span class="line"><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">  toProj4,</span></span>
+<span class="line"><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">  convertCoordinates,</span></span>
+<span class="line"><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">  type</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;"> ConversionErrors,</span></span>
+<span class="line"><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">} </span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">from</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;"> &quot;geotiff-geokeys-to-proj4&quot;</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">;</span></span>
+<span class="line"></span>
+<span class="line"><span style="--shiki-light:#6A737D;--shiki-dark:#6A737D;">// Example target projection. Use your own target projection.</span></span>
+<span class="line"><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">const</span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF;"> TARGET_PROJECTION</span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;"> =</span><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;"> &quot;WGS84&quot;</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">;</span></span>
+<span class="line"></span>
+<span class="line"><span style="--shiki-light:#6A737D;--shiki-dark:#6A737D;">/**</span></span>
+<span class="line"><span style="--shiki-light:#6A737D;--shiki-dark:#6A737D;"> * Processes GeoTIFF</span></span>
+<span class="line"><span style="--shiki-light:#6A737D;--shiki-dark:#6A737D;"> *</span></span>
+<span class="line"><span style="--shiki-light:#6A737D;--shiki-dark:#6A737D;"> * </span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">@param</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;"> blob</span><span style="--shiki-light:#6A737D;--shiki-dark:#6A737D;"> GeoTIFF blob</span></span>
+<span class="line"><span style="--shiki-light:#6A737D;--shiki-dark:#6A737D;"> */</span></span>
+<span class="line"><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">export</span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;"> async</span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;"> function</span><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0;"> processGeotiff</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">(</span><span style="--shiki-light:#E36209;--shiki-dark:#FFAB70;">blob</span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">:</span><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0;"> Blob</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">) {</span></span>
+<span class="line"><span style="--shiki-light:#6A737D;--shiki-dark:#6A737D;">  // Read image</span></span>
+<span class="line"><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">  const</span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF;"> tiff</span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;"> =</span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;"> await</span><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0;"> fromBlob</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">(blob);</span></span>
+<span class="line"><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">  const</span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF;"> imagesCount</span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;"> =</span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;"> await</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;"> tiff.</span><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0;">getImageCount</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">();</span></span>
+<span class="line"></span>
+<span class="line"><span style="--shiki-light:#6A737D;--shiki-dark:#6A737D;">  // Process each image</span></span>
+<span class="line"><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">  return</span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;"> await</span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF;"> Promise</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">.</span><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0;">all</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">(</span></span>
+<span class="line"><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">    Array.</span><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0;">from</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">({ length: imagesCount }).</span><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0;">map</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">(</span></span>
+<span class="line"><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">      async</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;"> (</span><span style="--shiki-light:#E36209;--shiki-dark:#FFAB70;">_</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">, </span><span style="--shiki-light:#E36209;--shiki-dark:#FFAB70;">i</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">) </span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">=&gt;</span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;"> await</span><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0;"> processImage</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">(</span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">await</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;"> tiff.</span><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0;">getImage</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">(i)),</span></span>
+<span class="line"><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">    ),</span></span>
+<span class="line"><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">  );</span></span>
+<span class="line"><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">}</span></span>
+<span class="line"></span>
+<span class="line"><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">async</span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;"> function</span><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0;"> processImage</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">(</span><span style="--shiki-light:#E36209;--shiki-dark:#FFAB70;">image</span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">:</span><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0;"> GeoTIFFImage</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">) {</span></span>
+<span class="line"><span style="--shiki-light:#6A737D;--shiki-dark:#6A737D;">  // Get Proj4 string and meta from the geokeys</span></span>
+<span class="line"><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">  const</span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF;"> projObj</span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;"> =</span><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0;"> toProj4</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">(image.</span><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0;">getGeoKeys</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">() </span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">||</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;"> {});</span></span>
+<span class="line"></span>
+<span class="line"><span style="--shiki-light:#6A737D;--shiki-dark:#6A737D;">  // Create a function that transforms coordinates from GeoTIFF&#39;s projection</span></span>
+<span class="line"><span style="--shiki-light:#6A737D;--shiki-dark:#6A737D;">  // to the target projection</span></span>
+<span class="line"><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">  const</span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF;"> projection</span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;"> =</span><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0;"> proj4</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">(projObj.proj4, </span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF;">TARGET_PROJECTION</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">);</span></span>
+<span class="line"></span>
+<span class="line"><span style="--shiki-light:#6A737D;--shiki-dark:#6A737D;">  // Report errors that may have occurred.</span></span>
+<span class="line"><span style="--shiki-light:#6A737D;--shiki-dark:#6A737D;">  // In most cases, it&#39;s enough to just warn the user or even ignore them.</span></span>
+<span class="line"><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">  for</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;"> (</span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">const</span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF;"> error</span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;"> in</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;"> projObj.errors) {</span></span>
+<span class="line"><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">    console.</span><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0;">warn</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">(</span></span>
+<span class="line"><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">      &quot;Error during reading geokeys: &quot;</span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;"> +</span></span>
+<span class="line"><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">        error </span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">+</span></span>
+<span class="line"><span style="--shiki-light:#032F62;--shiki-dark:#9ECBFF;">        &quot; - &quot;</span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;"> +</span></span>
+<span class="line"><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">        projObj.errors[error </span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">as</span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;"> keyof</span><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0;"> ConversionErrors</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">],</span></span>
+<span class="line"><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">    );</span></span>
+<span class="line"><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">  }</span></span>
+<span class="line"></span>
+<span class="line"><span style="--shiki-light:#6A737D;--shiki-dark:#6A737D;">  // Get necessary metadata</span></span>
+<span class="line"><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">  const</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;"> [</span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF;">originX</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">, </span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF;">originY</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">] </span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">=</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;"> image.</span><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0;">getOrigin</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">();</span></span>
+<span class="line"><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">  const</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;"> [</span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF;">xSize</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">, </span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF;">ySize</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">] </span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">=</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;"> image.</span><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0;">getResolution</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">();</span></span>
+<span class="line"></span>
+<span class="line"><span style="--shiki-light:#6A737D;--shiki-dark:#6A737D;">  // Loop over each pixel row-by-row and pixel-by-pixel</span></span>
+<span class="line"><span style="--shiki-light:#6A737D;--shiki-dark:#6A737D;">  // You may prefer using another window for your specific case</span></span>
+<span class="line"></span>
+<span class="line"><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">  const</span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF;"> width</span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;"> =</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;"> image.</span><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0;">getWidth</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">();</span></span>
+<span class="line"><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">  const</span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF;"> height</span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;"> =</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;"> image.</span><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0;">getHeight</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">();</span></span>
+<span class="line"></span>
+<span class="line"><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">  for</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;"> (</span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">let</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;"> y </span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">=</span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF;"> 0</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">; y </span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">&lt;</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;"> height; y</span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">++</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">) {</span></span>
+<span class="line"><span style="--shiki-light:#6A737D;--shiki-dark:#6A737D;">    // This is a TypedArray where elements are bands (&quot;colors&quot;)</span></span>
+<span class="line"><span style="--shiki-light:#6A737D;--shiki-dark:#6A737D;">    // and their elements are pixels of that color</span></span>
+<span class="line"><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">    const</span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF;"> rasters</span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;"> =</span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;"> await</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;"> image.</span><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0;">readRasters</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">({ window: [</span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF;">0</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">, y, width, y </span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">+</span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF;"> 1</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">] });</span></span>
+<span class="line"></span>
+<span class="line"><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">    const</span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF;"> band0</span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;"> =</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;"> rasters[</span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF;">0</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">];</span></span>
+<span class="line"></span>
+<span class="line"><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">    for</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;"> (</span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">let</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;"> x </span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">=</span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF;"> 0</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">; x </span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">&lt;</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;"> band0.</span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF;">length</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">; x</span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">++</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">) {</span></span>
+<span class="line"><span style="--shiki-light:#6A737D;--shiki-dark:#6A737D;">      // Convert pixel to source CRS coordinates by:</span></span>
+<span class="line"><span style="--shiki-light:#6A737D;--shiki-dark:#6A737D;">      //</span></span>
+<span class="line"><span style="--shiki-light:#6A737D;--shiki-dark:#6A737D;">      // 1. Multiplying current coordinates by pixel size.</span></span>
+<span class="line"><span style="--shiki-light:#6A737D;--shiki-dark:#6A737D;">      //    This results in distance from top-left corner in CRS units.</span></span>
+<span class="line"><span style="--shiki-light:#6A737D;--shiki-dark:#6A737D;">      // 2. Adding this value to top-left corner coordinates.</span></span>
+<span class="line"><span style="--shiki-light:#6A737D;--shiki-dark:#6A737D;">      //    This results in &quot;global&quot; coordinates in CRS units.</span></span>
+<span class="line"><span style="--shiki-light:#6A737D;--shiki-dark:#6A737D;">      //</span></span>
+<span class="line"><span style="--shiki-light:#6A737D;--shiki-dark:#6A737D;">      // This works because image is transformed by Affine Transformation</span></span>
+<span class="line"><span style="--shiki-light:#6A737D;--shiki-dark:#6A737D;">      // which preserves parallelism.</span></span>
+<span class="line"><span style="--shiki-light:#6A737D;--shiki-dark:#6A737D;">      //</span></span>
+<span class="line"><span style="--shiki-light:#6A737D;--shiki-dark:#6A737D;">      // Warning: this logic works only for the source CRS.</span></span>
+<span class="line"><span style="--shiki-light:#6A737D;--shiki-dark:#6A737D;">      // Target CRS may not preserve parallel lines, so pixel dimensions</span></span>
+<span class="line"><span style="--shiki-light:#6A737D;--shiki-dark:#6A737D;">      // will not be constant!</span></span>
+<span class="line"></span>
+<span class="line"><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">      const</span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF;"> crsX</span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;"> =</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;"> originX </span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">+</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;"> x </span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">*</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;"> xSize;</span></span>
+<span class="line"><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">      const</span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF;"> crsY</span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;"> =</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;"> originY </span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">+</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;"> y </span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">*</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;"> ySize;</span></span>
+<span class="line"></span>
+<span class="line"><span style="--shiki-light:#6A737D;--shiki-dark:#6A737D;">      // DEM or geocentric CRS only: Z coordinate is the pixel&#39;s value.</span></span>
+<span class="line"><span style="--shiki-light:#6A737D;--shiki-dark:#6A737D;">      // If you don&#39;t need heights then you may omit Z coordinate entirely.</span></span>
+<span class="line"><span style="--shiki-light:#6A737D;--shiki-dark:#6A737D;">      //</span></span>
+<span class="line"><span style="--shiki-light:#6A737D;--shiki-dark:#6A737D;">      // In practice, you may encounter DEMs with multiple bands,</span></span>
+<span class="line"><span style="--shiki-light:#6A737D;--shiki-dark:#6A737D;">      // and heights may not be encoded in the first band.</span></span>
+<span class="line"><span style="--shiki-light:#6A737D;--shiki-dark:#6A737D;">      // GeoTIFF specification doesn&#39;t limit that in any way.</span></span>
+<span class="line"><span style="--shiki-light:#6A737D;--shiki-dark:#6A737D;">      // Handle these situations as you see fit.</span></span>
+<span class="line"></span>
+<span class="line"><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">      const</span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF;"> crsZ</span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;"> =</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;"> band0[x];</span></span>
+<span class="line"></span>
+<span class="line"><span style="--shiki-light:#6A737D;--shiki-dark:#6A737D;">      // Convert coordinates for projection</span></span>
+<span class="line"><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">      const</span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF;"> point</span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;"> =</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;"> projObj.</span><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0;">convertCoordinates</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">({ x: crsX, y: crsY, z: crsZ });</span></span>
+<span class="line"><span style="--shiki-light:#6A737D;--shiki-dark:#6A737D;">      // Or:</span></span>
+<span class="line"><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">      const</span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF;"> point</span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;"> =</span><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0;"> convertCoordinates</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">(</span></span>
+<span class="line"><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">        { x: crsX, y: crsY, z: crsZ },</span></span>
+<span class="line"><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">        projObj.conversionParameters,</span></span>
+<span class="line"><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">      );</span></span>
+<span class="line"></span>
+<span class="line"><span style="--shiki-light:#6A737D;--shiki-dark:#6A737D;">      // Project into the target CRS</span></span>
+<span class="line"><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;">      const</span><span style="--shiki-light:#005CC5;--shiki-dark:#79B8FF;"> projectedPoint</span><span style="--shiki-light:#D73A49;--shiki-dark:#F97583;"> =</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;"> projection.</span><span style="--shiki-light:#6F42C1;--shiki-dark:#B392F0;">forward</span><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">(point);</span></span>
+<span class="line"></span>
+<span class="line"><span style="--shiki-light:#6A737D;--shiki-dark:#6A737D;">      // Process projected point...</span></span>
+<span class="line"><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">    }</span></span>
+<span class="line"><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">  }</span></span>
+<span class="line"><span style="--shiki-light:#24292E;--shiki-dark:#E1E4E8;">}</span></span></code></pre></div><h2 id="reference-projects" tabindex="-1">Reference projects <a class="header-anchor" href="#reference-projects" aria-label="Permalink to &quot;Reference projects&quot;">​</a></h2><h3 id="geotiff-3d-dem-viewer" tabindex="-1">GeoTIFF 3D DEM Viewer <a class="header-anchor" href="#geotiff-3d-dem-viewer" aria-label="Permalink to &quot;GeoTIFF 3D DEM Viewer&quot;">​</a></h3><blockquote><p>Sorry for the bad code, I was just starting back then</p></blockquote><p><a href="https://matafokka.github.io/geotiff-3d-dem-viewer" target="_blank" rel="noreferrer">GeoTIFF 3D DEM Viewer</a> demonstrates how to read GeoTIFF files and display them in <a href="https://cesium.com/" target="_blank" rel="noreferrer">CesiumJS</a> as 3D terrain. Check the <a href="https://github.com/matafokka/geotiff-3d-dem-viewer" target="_blank" rel="noreferrer">source code</a> for more.</p><p><strong>Most important files:</strong></p><ol><li><a href="https://github.com/matafokka/geotiff-3d-dem-viewer/blob/master/src/components/Menu.tsx" target="_blank" rel="noreferrer">File management</a>.</li><li><a href="https://github.com/matafokka/geotiff-3d-dem-viewer/blob/master/src/etc/GeoTIFFManager.ts" target="_blank" rel="noreferrer">Image loading</a>.</li></ol><h2 id="known-issues" tabindex="-1">Known issues <a class="header-anchor" href="#known-issues" aria-label="Permalink to &quot;Known issues&quot;">​</a></h2><h3 id="arbitrary-geokeys-precedence" tabindex="-1">Arbitrary geokeys precedence <a class="header-anchor" href="#arbitrary-geokeys-precedence" aria-label="Permalink to &quot;Arbitrary geokeys precedence&quot;">​</a></h3><p>There&#39;s seemingly no document that mentions which geokeys should take precedence over which.</p><p>This library does what seems to be logical but this might be wrong.</p><p>If you know anything about it then please create an issue and tell whether current behavior is wrong (and how to fix it) or right (so this text will be removed).</p><h3 id="local-depth-is-not-supported" tabindex="-1">Local depth is not supported <a class="header-anchor" href="#local-depth-is-not-supported" aria-label="Permalink to &quot;Local depth is not supported&quot;">​</a></h3><p>Local depth is not supported because reference points are needed. Following has been excluded:</p><ol><li>Vertical CS: 1049 and 1050.</li><li>Vertical CRS: 8378 and 8897.</li></ol><h3 id="vertical-datums-are-not-supported" tabindex="-1">Vertical datums are not supported <a class="header-anchor" href="#vertical-datums-are-not-supported" aria-label="Permalink to &quot;Vertical datums are not supported&quot;">​</a></h3><p>Vertical datums are not supported at all because mappings are needed.</p><p>If you have at least some mappings please post them in an issue, they&#39;ll be integrated into the library.</p><h2 id="faq" tabindex="-1">FAQ <a class="header-anchor" href="#faq" aria-label="Permalink to &quot;FAQ&quot;">​</a></h2><h3 id="how-is-it-different-from-epsg-index" tabindex="-1">How is it different from <a href="https://github.com/derhuerst/epsg-index" target="_blank" rel="noreferrer">epsg-index</a>? <a class="header-anchor" href="#how-is-it-different-from-epsg-index" aria-label="Permalink to &quot;How is it different from [epsg-index](https://github.com/derhuerst/epsg-index)?&quot;">​</a></h3><p><code>epsg-index</code> only provides projections definitions, GeoTIFF uses more than that.</p><h3 id="how-does-it-compare-to-battle-proven-libraries-such-as-gdal" tabindex="-1">How does it compare to battle-proven libraries such as GDAL? <a class="header-anchor" href="#how-does-it-compare-to-battle-proven-libraries-such-as-gdal" aria-label="Permalink to &quot;How does it compare to battle-proven libraries such as GDAL?&quot;">​</a></h3><p><strong>Pros:</strong></p><ol><li>Can be used in any JS environment like any other JS library. No need for WebAssembly or wrappers.</li><li>Faster than a wrapped library because there&#39;s no inter-process communication. The whole things runs synchronously.</li><li>Way lighter than GDAL and probably others.</li></ol><p><strong>Cons:</strong></p><ol><li>Not as widely-used as GDAL and others, so community knowledge is lacking. That&#39;s why there are <a href="https://github.com/matafokka/geotiff-geokeys-to-proj4/tree/main/#known-issues" target="_blank" rel="noreferrer">unresolved issues</a>.</li></ol><h3 id="this-library-produces-wrong-results" tabindex="-1">This library produces wrong results! <a class="header-anchor" href="#this-library-produces-wrong-results" aria-label="Permalink to &quot;This library produces wrong results!&quot;">​</a></h3><p>This library only maps geokeys to their Proj4 definitions and builds a final Proj4 string. It doesn&#39;t perform any projections.</p><p>If you&#39;ve encountered a bug please take a look at Proj4 string first and compare it to a string generated by a GIS. If something is fundamentally wrong then it&#39;s the issue of this library. Otherwise, there&#39;s something wrong with Proj4.</p><p>Be careful when comparing results with <a href="https://epsg.io" target="_blank" rel="noreferrer">epsg.io</a>. While <a href="https://epsg.io" target="_blank" rel="noreferrer">epsg.io</a> is mostly right, it&#39;s not an official data source. For example, <a href="https://epsg.io" target="_blank" rel="noreferrer">epsg.io</a> maps CRS <code>21780</code> to <code>+proj=somerc</code> but the right projection seems to be <code>+proj=omerc</code>.</p><p>Redundant parameters <em>(for example, <code>+a</code> and <code>+b</code> that are the same as <code>+ellps</code>)</em> are not a bug. This behavior simplifies development, increases performance by not making useless comparisons and ensures that the right parameters are used.</p><p>Missing <code>+units</code> is also not a bug because <code>convertCoordinates()</code> should be used for the transformation.</p><h3 id="the-data-is-outdated" tabindex="-1">The data is outdated! <a class="header-anchor" href="#the-data-is-outdated" aria-label="Permalink to &quot;The data is outdated!&quot;">​</a></h3><p>Please request an update by creating an issue.</p><p>But EPSG rarely introduces major changes so even 1 year old data should be just fine.</p><h3 id="why-the-data-is-outdated-though" tabindex="-1">Why the data is outdated though? <a class="header-anchor" href="#why-the-data-is-outdated-though" aria-label="Permalink to &quot;Why the data is outdated though?&quot;">​</a></h3><p>Because <a href="https://epsg.org" target="_blank" rel="noreferrer">epsg.org</a> doesn&#39;t provide public access to their database.</p><p>You need to register an account to download the database.</p><p>There&#39;s no API to do so.</p><p>Because client&#39;s UI and backend&#39;s endpoints might change in the future, there&#39;s no point in automating the updates.</p><h3 id="what-data-sources-are-used" tabindex="-1">What data sources are used? <a class="header-anchor" href="#what-data-sources-are-used" aria-label="Permalink to &quot;What data sources are used?&quot;">​</a></h3><ol><li><p><strong>Main source:</strong> <a href="https://epsg.org" target="_blank" rel="noreferrer">official EPSG database</a>.</p></li><li><p><a href="https://github.com/matafokka/geotiff-geokeys-to-proj4/tree/main/EPSG/data/AdditionalCRS.js" target="_blank" rel="noreferrer">Community data</a>.</p></li><li><p><a href="https://epsg.io" target="_blank" rel="noreferrer">epsg.io</a> is used to selectively check if Proj4 strings are correct.</p></li></ol><h2 id="contributing" tabindex="-1">Contributing <a class="header-anchor" href="#contributing" aria-label="Permalink to &quot;Contributing&quot;">​</a></h2><p>You can contribute by:</p><ol><li>Solving <a href="https://github.com/matafokka/geotiff-geokeys-to-proj4/tree/main/#known-issues" target="_blank" rel="noreferrer">known issues</a>.</li><li>Reporting bugs.</li><li>Providing suggestions.</li><li>Everything else that comes to mind.</li></ol><p>Thank you for your support!</p><h2 id="related-projects" tabindex="-1">Related projects <a class="header-anchor" href="#related-projects" aria-label="Permalink to &quot;Related projects&quot;">​</a></h2><ol><li><p><a href="https://github.com/geotiffjs/geotiff.js/" target="_blank" rel="noreferrer">geotiff.js</a> is a library that can read GeoTIFF images.</p></li><li><p><a href="https://github.com/proj4js/proj4js" target="_blank" rel="noreferrer">proj4js</a> is a port of Proj4 to JS.</p></li><li><p><a href="https://github.com/derhuerst/epsg-index" target="_blank" rel="noreferrer">epsg-index</a> is a machine-readable index of all EPSG coordinate reference systems.</p></li><li><p><a href="https://epsg.io" target="_blank" rel="noreferrer">epsg.io</a> is a website that provides the EPSG data and an API to access it.</p></li><li><p><a href="https://github.com/GeoTIFF/geokeys-to-proj4js" target="_blank" rel="noreferrer">geokeys-to-proj4js</a> is an unfinished and probably abandoned project with the same goal.</p></li></ol></div></div></main><footer class="VPDocFooter" data-v-39a288b8 data-v-e257564d><!--[--><!--]--><!----><nav class="prev-next" aria-labelledby="doc-footer-aria-label" data-v-e257564d><span class="visually-hidden" id="doc-footer-aria-label" data-v-e257564d>Pager</span><div class="pager" data-v-e257564d><!----></div><div class="pager" data-v-e257564d><a class="VPLink link pager-link next" href="/geotiff-geokeys-to-proj4/api/interfaces/ConversionErrors.html" data-v-e257564d><!--[--><span class="desc" data-v-e257564d>Next page</span><span class="title" data-v-e257564d>ConversionErrors</span><!--]--></a></div></nav></footer><!--[--><!--]--></div></div></div><!--[--><!--]--></div></div><!----><!--[--><!--]--></div></div>
+    <script>window.__VP_HASH_MAP__=JSON.parse("{\"api_functions_convertcoordinates.md\":\"DPRNHd5w\",\"api_functions_toproj4.md\":\"D0RhoM_Q\",\"api_index.md\":\"CP9JuQr7\",\"api_interfaces_conversionerrors.md\":\"XhpnqEHG\",\"api_interfaces_convertedcoordinate.md\":\"CXoii7hI\",\"api_interfaces_coordinateconversionparameters.md\":\"DXkzeGNW\",\"api_interfaces_geokeys.md\":\"BFWyqsNQ\",\"api_interfaces_sourcecoordinate.md\":\"Yp6gfFit\",\"api_type-aliases_coordinateunits.md\":\"MFA4o5u6\",\"api_type-aliases_geokeysnotsupportederrors.md\":\"DnHIo49T\",\"index.md\":\"Cz35PEkI\"}");window.__VP_SITE_DATA__=JSON.parse("{\"lang\":\"en-US\",\"dir\":\"ltr\",\"title\":\"geotiff-geokeys-to-proj4\",\"description\":\"geotiff-geokeys-to-proj4 documentation website. This is a library that converts GeoTIFF's geokeys to Proj4 string.\",\"base\":\"/geotiff-geokeys-to-proj4/\",\"head\":[],\"router\":{\"prefetchLinks\":true},\"appearance\":true,\"themeConfig\":{\"logo\":\"/favicon.svg\",\"search\":{\"provider\":\"local\"},\"outline\":{\"level\":\"deep\"},\"sidebar\":[{\"text\":\"Home\",\"collapsed\":false,\"link\":\"/\"},{\"text\":\"API Reference\",\"items\":[{\"text\":\"Interfaces\",\"collapsed\":false,\"items\":[{\"text\":\"ConversionErrors\",\"link\":\"/api/interfaces/ConversionErrors.md\"},{\"text\":\"ConvertedCoordinate\",\"link\":\"/api/interfaces/ConvertedCoordinate.md\"},{\"text\":\"CoordinateConversionParameters\",\"link\":\"/api/interfaces/CoordinateConversionParameters.md\"},{\"text\":\"GeoKeys\",\"link\":\"/api/interfaces/GeoKeys.md\"},{\"text\":\"SourceCoordinate\",\"link\":\"/api/interfaces/SourceCoordinate.md\"}]},{\"text\":\"Type Aliases\",\"collapsed\":false,\"items\":[{\"text\":\"CoordinateUnits\",\"link\":\"/api/type-aliases/CoordinateUnits.md\"},{\"text\":\"GeokeysNotSupportedErrors\",\"link\":\"/api/type-aliases/GeokeysNotSupportedErrors.md\"}]},{\"text\":\"Functions\",\"collapsed\":false,\"items\":[{\"text\":\"convertCoordinates\",\"link\":\"/api/functions/convertCoordinates.md\"},{\"text\":\"toProj4\",\"link\":\"/api/functions/toProj4.md\"}]}]}],\"socialLinks\":[{\"icon\":\"github\",\"link\":\"https://github.com/matafokka/geotiff-geokeys-to-proj4\"}]},\"locales\":{},\"scrollOffset\":134,\"cleanUrls\":false}");</script>
+    
+  </body>
 </html>
