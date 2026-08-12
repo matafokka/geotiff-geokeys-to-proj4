@@ -22,4 +22,4 @@
 | Function | Description |
 | ------ | ------ |
 | [convertCoordinates](functions/convertCoordinates.md) | Converts given coordinates to the coordinates accepted by Proj4. |
-| [toProj4](functions/toProj4.md) | Converts GeoTIFF's geokeys to Proj4 string |
+| [toProj4](functions/toProj4.md) | Converts GeoTIFF's geokeys to Proj4 string and produces associated data |

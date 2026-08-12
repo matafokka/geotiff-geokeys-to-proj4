@@ -1,11 +1,11 @@
 {
   "type": "module",
   "name": "geotiff-geokeys-to-proj4",
-  "version": "2026.08.12",
+  "version": "2026.08.13",
   "description": "A library that converts GeoTIFF's geokeys to Proj4 string",
   "license": "BSD-3-Clause",
   "author": "matafokka",
-  "homepage": "https://github.com/matafokka/geotiff-geokeys-to-proj4",
+  "homepage": "https://matafokka.github.io/geotiff-geokeys-to-proj4/",
   "repository": "https://github.com/matafokka/geotiff-geokeys-to-proj4",
   "keywords": [
     "geotiff",

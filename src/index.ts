@@ -109,7 +109,7 @@ const KEYS_ORDER = [
 ];
 
 /**
- * Converts GeoTIFF's geokeys to Proj4 string
+ * Converts GeoTIFF's geokeys to Proj4 string and produces associated data
  *
  * @param geoKeys Geokeys
  * @return Proj4 string and associated data

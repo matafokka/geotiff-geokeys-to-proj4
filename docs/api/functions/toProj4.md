@@ -6,7 +6,7 @@
 function toProj4(geoKeys): object;
 ```
 
-Converts GeoTIFF's geokeys to Proj4 string
+Converts GeoTIFF's geokeys to Proj4 string and produces associated data
 
 ## Parameters
 

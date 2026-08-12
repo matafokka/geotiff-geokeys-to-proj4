@@ -37,7 +37,7 @@ and [proj4js](https://github.com/proj4js/proj4js).
 
 1. Can be transpiled down to ES3 *(any browser from year 2000)*.
 
-1. Sizes at ≈1.1 Mb *(vs ≈20 Mb compared to existing libraries)*.
+1. Sizes at ≈1.1 Mb (≈130 Kb gzipped). Compare that to existing libraries weighting at ≈20 Mb.
 
 ## Installation
 
@@ -48,7 +48,9 @@ Or just this library: `npm i geotiff-geokeys-to-proj4`.
 ## Example usage
 
 This is an example of image processing with [geotiff.js](https://github.com/geotiffjs/geotiff.js/)
-and [proj4js](https://github.com/proj4js/proj4js):
+and [proj4js](https://github.com/proj4js/proj4js).
+
+**Note**: In real world, you probably need to parallelize image processing. See [Tips](#tips) for more info.
 
 ```ts
 import { fromBlob, type GeoTIFFImage } from "geotiff";
@@ -175,6 +177,21 @@ Check the [source code](https://github.com/matafokka/geotiff-3d-dem-viewer) for 
 
 1. [File management](https://github.com/matafokka/geotiff-3d-dem-viewer/blob/master/src/components/Menu.tsx).
 1. [Image loading](https://github.com/matafokka/geotiff-3d-dem-viewer/blob/master/src/etc/GeoTIFFManager.ts).
+
+## Tips
+
+1. Load this library with dynamic imports (`const { ... } = await import("geotiff-geokeys-to-proj-4")`).
+
+   Even gzipped, this library is huge. If you import it using regular `import` then your users will have to wait while
+   this library is loading.
+
+   Use dynamic imports to load it on-demand. Optionally add prefetching.
+
+1. Parallelize image processing.
+
+   Doing processing pixel-by-pixel on a single thread is slow. Blocking the main thread in a web app is worse.
+
+   Use web workers in a browser or threads in Node to process different parts of an image simultaneously.
 
 ## Known issues
 
