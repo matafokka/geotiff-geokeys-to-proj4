@@ -1,8 +1,8 @@
+<!-- DO NOT EDIT! This file has been automatically generated. -->
 # geotiff-geokeys-to-proj4
 
 This library converts GeoTIFF's geokeys to Proj4 string for correct image processing.
 
-## [Documentation](https://matafokka.github.io/geotiff-geokeys-to-proj4/module-geokeysToProj4.html)
 
 ## Rationale
 
@@ -217,7 +217,7 @@ If you have at least some mappings please post them in an issue, they'll be inte
 **Cons:**
 
 1. Not as widely-used as GDAL and others, so community knowledge is lacking. That's why there are
-[unresolved issues](#known-issues).
+[unresolved issues](https://github.com/matafokka/geotiff-geokeys-to-proj4/tree/main/#known-issues).
 
 ### This library produces wrong results!
 
@@ -257,7 +257,7 @@ Because client's UI and backend's endpoints might change in the future, there's 
 
 1. **Main source:** [official EPSG database](https://epsg.org).
 
-1. [Community data](EPSG/data/AdditionalCRS.js).
+1. [Community data](https://github.com/matafokka/geotiff-geokeys-to-proj4/tree/main/EPSG/data/AdditionalCRS.js).
 
 1. [epsg.io](https://epsg.io) is used to selectively check if Proj4 strings are correct.
 
@@ -265,7 +265,7 @@ Because client's UI and backend's endpoints might change in the future, there's 
 
 You can contribute by:
 
-1. Solving [known issues](#known-issues).
+1. Solving [known issues](https://github.com/matafokka/geotiff-geokeys-to-proj4/tree/main/#known-issues).
 1. Reporting bugs.
 1. Providing suggestions.
 1. Everything else that comes to mind.

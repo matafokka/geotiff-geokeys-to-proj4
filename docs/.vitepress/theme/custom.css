@@ -1,0 +1,28 @@
+:root {
+  /* Minor size adjustments to remove text wrapping */
+  --vp-layout-max-width: 1460px;
+  --vp-sidebar-width: 280px;
+
+  /* Prevent layout shift when toggling from overflowing page to non-overflowing */
+  overflow-y: scroll;
+}
+
+/* Fix text wrapping in the sidebar */
+.VPSidebarItem .VPLink {
+  word-break: break-all;
+}
+
+/* Add scrollbars to the page contents */
+.VPDoc .aside-container {
+  --top: calc(var(--vp-nav-height) + var(--vp-layout-top-height, 0px) + var(--vp-doc-top-height, 0px));
+
+  scrollbar-width: thin;
+  padding-top: 0;
+  margin-top: var(--top);
+  height: calc(100vh - var(--top));
+}
+
+/* Make title fit nicer */
+.VPNavBarTitle .title {
+  font-size: 14px;
+}

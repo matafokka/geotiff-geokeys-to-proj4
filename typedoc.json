@@ -1,0 +1,15 @@
+{
+  "entryPoints": ["./src/index.ts"],
+  "out": "./docs/api",
+  "docsRoot": "./docs",
+  "plugin": ["typedoc-plugin-markdown", "typedoc-vitepress-theme"],
+  "readme": "none",
+  "indexFormat": "table",
+  "useCodeBlocks": true,
+  "disableSources": true,
+  "parametersFormat": "htmlTable",
+  "sidebar": {
+    "pretty": true,
+    "collapsed": false
+  }
+}

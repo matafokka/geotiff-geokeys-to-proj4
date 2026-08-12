@@ -1,0 +1,28 @@
+{
+  "compilerOptions": {
+    "target": "es2023",
+    "module": "esnext",
+    "lib": ["ES2023"],
+    "types": ["vite/client", "node"],
+    "allowArbitraryExtensions": true,
+    "skipLibCheck": true,
+
+    /* Bundler mode */
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "verbatimModuleSyntax": true,
+    "moduleDetection": "force",
+    "noEmit": true,
+
+    /* Linting */
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "erasableSyntaxOnly": true,
+    "noFallthroughCasesInSwitch": true,
+
+    "paths": {
+      "@/*": ["./src/*"]
+    }
+  },
+  "include": ["src", "tests", "docs", "docs/.vitepress/**/*"]
+}

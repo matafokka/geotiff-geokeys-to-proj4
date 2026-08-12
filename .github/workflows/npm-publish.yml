@@ -1,22 +1,27 @@
-# This workflow will run tests using node and then publish a package to GitHub Packages when a release is created
-# For more information see: https://help.github.com/actions/language-and-framework-guides/publishing-nodejs-packages
+# https://docs.npmjs.com/trusted-publishers#step-2-configure-your-cicd-workflow
 
-name: Node.js Package
+name: Publish to NPM
 
 on:
   release:
     types: [created]
+  workflow_dispatch:
+
+permissions:
+  id-token: write  # Required for OIDC
+  contents: read
 
 jobs:
   publish-npm:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v2
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
         with:
-          node-version: 14
-          registry-url: https://registry.npmjs.org/
-      - run: npm install
-      - run: npm publish
-        env:
-          NODE_AUTH_TOKEN: ${{secrets.npm_token}}
+          node-version: 24
+          registry-url: https://registry.npmjs.org
+      - run: npm install --verbose
+      - run: npm run test
+      - run: npm run build:lib
+      - run: npm publish --verbose
+        working-directory: dist

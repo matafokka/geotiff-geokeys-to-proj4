@@ -1,0 +1,56 @@
+[
+  {
+    "text": "Interfaces",
+    "collapsed": false,
+    "items": [
+      {
+        "text": "ConversionErrors",
+        "link": "/api/interfaces/ConversionErrors.md"
+      },
+      {
+        "text": "ConvertedCoordinate",
+        "link": "/api/interfaces/ConvertedCoordinate.md"
+      },
+      {
+        "text": "CoordinateConversionParameters",
+        "link": "/api/interfaces/CoordinateConversionParameters.md"
+      },
+      {
+        "text": "GeoKeys",
+        "link": "/api/interfaces/GeoKeys.md"
+      },
+      {
+        "text": "SourceCoordinate",
+        "link": "/api/interfaces/SourceCoordinate.md"
+      }
+    ]
+  },
+  {
+    "text": "Type Aliases",
+    "collapsed": false,
+    "items": [
+      {
+        "text": "CoordinateUnits",
+        "link": "/api/type-aliases/CoordinateUnits.md"
+      },
+      {
+        "text": "GeokeysNotSupportedErrors",
+        "link": "/api/type-aliases/GeokeysNotSupportedErrors.md"
+      }
+    ]
+  },
+  {
+    "text": "Functions",
+    "collapsed": false,
+    "items": [
+      {
+        "text": "convertCoordinates",
+        "link": "/api/functions/convertCoordinates.md"
+      },
+      {
+        "text": "toProj4",
+        "link": "/api/functions/toProj4.md"
+      }
+    ]
+  }
+]

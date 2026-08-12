@@ -7,18 +7,23 @@ on:
     types: [created]
   workflow_dispatch:
 
+env:
+  DOCS_BASE_URL: /geotiff-geokeys-to-proj4/
+  HOST: https://matafokka.github.io/geotiff-geokeys-to-proj4/
+
 jobs:
   deploy:
     concurrency: ci-${{ github.ref }} # Recommended if you intend to make multiple deployments in quick succession.
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
         with:
-          node-version: 18
-      - run: npm install
-      - run: npm run docs
+          node-version: 24
+      - run: npm install --verbose
+      - run: npm run test
+      - run: npm run build
       - name: Deploy
         uses: JamesIves/github-pages-deploy-action@v4
         with:
-          folder: ./docs
+          folder: docs/.vitepress/dist
