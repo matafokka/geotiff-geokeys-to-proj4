@@ -2,7 +2,7 @@
 
 This library converts GeoTIFF's geokeys to Proj4 string for correct image processing.
 
-## [Documentation](https://matafokka.github.io/geotiff-geokeys-to-proj4/module-geokeysToProj4.html)
+## [Documentation](https://matafokka.github.io/geotiff-geokeys-to-proj4/)
 
 ## Rationale
 

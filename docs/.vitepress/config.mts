@@ -22,19 +22,22 @@ export default defineConfig({
   },
 
   head: [
-    ["link", { rel: "shortcut icon", type: "image/svg+xml", href: "/favicon.svg", sizes: "512x512" }],
+    ["link", { rel: "shortcut icon", type: "image/svg+xml", href: process.env.HOST + "favicon.svg", sizes: "512x512" }],
 
     ...[
       ["png", 512],
       ["ico", 256],
-    ].map(([ext, size]): HeadConfig => ["link", { rel: "icon", href: `/favicon.${ext}`, sizes: size + "x" + size }]),
+    ].map(([ext, size]): HeadConfig => [
+      "link",
+      { rel: "icon", href: process.env.HOST + `favicon.${ext}`, sizes: size + "x" + size },
+    ]),
 
     metaWithProperty("og:locale", "en"),
     metaWithName("robots", "all"),
     metaWithName("twitter:card", "summary"),
 
     ...[
-      ["image", "/splash.png"],
+      ["image", process.env.HOST + "splash.png"],
       ["image:type", "image/png"],
       ["image:width", "1200"],
       ["image:height", "600"],
