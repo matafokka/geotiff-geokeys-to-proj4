@@ -46,10 +46,6 @@ yarn-error.log*
 # Astro
 .astro/
 
-# VitePress
-
-/**/.vitepress/cache/
-
 # Imported SQL
 
 src/sql/

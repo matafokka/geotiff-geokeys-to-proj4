@@ -8,11 +8,11 @@ import { join } from "node:path";
     content = (await readFile(join(import.meta.dirname, "..", "..", "dist", "README.md"))).toString();
   } catch (e) {
     if (typeof e === "object" && (e as any).code === "ENOENT") {
-      console.warn("Library has not been built yet. Using old documentation.");
-      return;
+      console.warn("Library has not been built yet. Using root README.md.");
+      content = (await readFile(join(import.meta.dirname, "..", "..", "README.md"))).toString();
+    } else {
+      throw e;
     }
-
-    throw e;
   }
 
   content =

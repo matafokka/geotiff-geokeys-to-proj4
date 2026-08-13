@@ -2,6 +2,7 @@
   "entryPoints": ["./src/index.ts"],
   "out": "./docs/api",
   "docsRoot": "./docs",
+  "tsconfig": "tsconfig.typedoc.json",
   "plugin": ["typedoc-plugin-markdown", "typedoc-vitepress-theme"],
   "readme": "none",
   "indexFormat": "table",

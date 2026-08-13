@@ -46,7 +46,7 @@
     "type-check": "tsc --noEmit",
     "test": "tsx tests/test.ts",
 
-    "build": "npm run build:lib && npm run build:docs",
+    "build": "run-s build:lib build:docs",
     "build:lib": "vite build",
     "build:docs": "npm run gen:docs && vitepress build docs",
 
