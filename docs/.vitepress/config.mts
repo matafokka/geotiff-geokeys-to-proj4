@@ -36,6 +36,7 @@ export default defineConfig({
     ["link", { rel: "apple-touch-icon", href: HOST + "/favicon.png", type: "image/png", sizes: "512x512" }],
 
     metaWithProperty("og:locale", "en"),
+    metaWithProperty("og:type", "article"),
     metaWithProperty("og:site_name", title),
     metaWithName("robots", "all"),
     metaWithName("twitter:card", "summary"),

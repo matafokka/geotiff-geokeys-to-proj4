@@ -1,7 +1,18 @@
+@font-face {
+  font-family: "Hack";
+  font-style: normal;
+  font-display: swap;
+  src: url(./fonts/hack.ttf);
+}
+
 :root {
   /* Minor size adjustments to remove text wrapping */
   --vp-layout-max-width: 1460px;
   --vp-sidebar-width: 280px;
+
+  --vp-font-family-mono: Hack, "Roboto Mono", "Roboto Mono Static", ui-monospace, monospace;
+  --vp-code-line-height: 1.5;
+  --vp-code-font-size: 12px;
 
   /* Prevent layout shift when toggling from overflowing page to non-overflowing */
   overflow-y: scroll;
