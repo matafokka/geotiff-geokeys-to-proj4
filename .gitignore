@@ -45,7 +45,3 @@ yarn-error.log*
 
 # Astro
 .astro/
-
-# Imported SQL
-
-src/sql/

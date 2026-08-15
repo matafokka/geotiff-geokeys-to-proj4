@@ -1,35 +1,26 @@
-// Dependencies graph
+import { conversionsGenerator } from "@/generators/conversionsGenerator";
+import { crsGenerator } from "@/generators/crsGenerator";
+import { datumsGenerator } from "@/generators/datumsGenerator";
+import { ellipsoidsGenerator } from "@/generators/ellipsoidsGenerator";
+import { meridiansGenerator } from "@/generators/meridiansGenerator";
+import { unitsGenerator } from "@/generators/unitsGenerator";
+import { verticalCsGenerator } from "@/generators/verticalCsGenerator";
+import type { Generator } from "@/generators/mappingGenerator";
+import { compressMappings, writeDict } from "@/compression/compressMappings";
+import { writePredefinedMappings } from "@/cli/writePredefinedMappings";
 
-interface Node {
-  generators: (() => Promise<{ default: () => Promise<void> }>)[];
-  dependents?: Node[];
-}
-
-const graph: Node = {
-  generators: [() => import("@/generators/units")],
-  dependents: [
-    { generators: [() => import("@/generators/conversions")] },
-    {
-      generators: [
-        () => import("@/generators/ellipsoids"),
-        () => import("@/generators/meridians"),
-        () => import("@/generators/vertical-cs"),
-      ],
-      dependents: [{ generators: [() => import("@/generators/datums"), () => import("@/generators/crs")] }],
-    },
-  ],
-};
-
-// Generators runner
-
-async function walk(node: Node) {
-  await Promise.all(node.generators.map((imp) => imp().then((r) => r.default())));
-
-  if (node.dependents) {
-    await Promise.all(node.dependents.map((node) => walk(node)));
-  }
-}
+const generators: Generator<any>[] = [
+  conversionsGenerator,
+  crsGenerator,
+  datumsGenerator,
+  ellipsoidsGenerator,
+  meridiansGenerator,
+  unitsGenerator,
+  verticalCsGenerator,
+];
 
 export async function generateCode() {
-  await walk(graph);
+  await Promise.all(generators.map((gen) => gen.generate()));
+  compressMappings();
+  await Promise.all(generators.map((gen) => gen.write()).concat(writeDict(), writePredefinedMappings()));
 }

@@ -6,7 +6,7 @@ Updates PostgreSQL database and generates code from the EPSG SQL scripts
 Prerequisites:
   1. Set up PostgreSQL. Other RDBMS are not supported.
   2. Download PostgreSQL database (archive with scripts) from https://epsg-registry.org.
-  3. Copy the scripts to the "src/sql" directory.
+  3. Copy the scripts to the "src/sql/EPSG" directory.
   4. Run this script.
 
 WARNING: Don't forward untrusted input to the arguments!

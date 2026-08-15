@@ -1,18 +1,19 @@
-import { GeogEllipsoidGeoKey } from "@/mappings/GeogEllipsoidGeoKey";
-import { GeogGeodeticDatumGeoKey } from "@/mappings/GeogGeodeticDatumGeoKey";
-import { GeogPrimeMeridianGeoKey } from "@/mappings/GeogPrimeMeridianGeoKey";
-import { ProjCoordTransGeoKey } from "@/mappings/ProjCoordTransGeoKey";
-import { ProjectionGeoKey } from "@/mappings/ProjectionGeoKey";
-import { CRS } from "@/mappings/CRS";
-import { Units } from "@/mappings/Units";
-import { PCSKeys } from "@/mappings/PCSKeys";
-import { transformProj4 } from "@/mappings/transformProj4";
+import { GeogEllipsoidGeoKey } from "@/mappings/generated/GeogEllipsoidGeoKey";
+import { GeogGeodeticDatumGeoKey } from "@/mappings/generated/GeogGeodeticDatumGeoKey";
+import { GeogPrimeMeridianGeoKey } from "@/mappings/generated/GeogPrimeMeridianGeoKey";
+import { ProjCoordTransGeoKey } from "@/mappings/generated/ProjCoordTransGeoKey";
+import { ProjectionGeoKey } from "@/mappings/generated/ProjectionGeoKey";
+import { CRS } from "@/mappings/generated/CRS";
+import { Units } from "@/mappings/generated/Units";
+import { PCSKeys } from "@/mappings/generated/PCSKeys";
+import { finalizeProj4 } from "@/transformations/finalizeProj4";
 import { radToDeg, toFixed } from "@/utils/math";
 import type { ConversionErrors, GeokeysNotSupportedErrors } from "@/types/ConversionErrors";
 import type { GeoKeys } from "@/types/GeoKeys";
 import type { CRSObj } from "@/types/CRSObj";
 import type { CoordinateUnits } from "@/types/CoordinateUnits";
-import { decodeProj4, objToProj4, proj4ToObj } from "@/utils/proj4";
+import { objToProj4, proj4ToObj } from "@/utils/proj4";
+import { decompressProj4 } from "@/compression/decompressProj4";
 
 export type { ConversionErrors, GeokeysNotSupportedErrors, CoordinateUnits, GeoKeys };
 
@@ -89,24 +90,24 @@ const USER_DEFINED = 32767;
 
 /** Order in which tokens should be written to final string to make it look nice */
 const KEYS_ORDER = [
-  "+proj",
-  "+lat_0",
-  "+lon_0",
-  "+lat_1",
-  "+lat_ts",
-  "+lon_1",
-  "+lat_2",
-  "+lon_2",
-  "+k_0",
-  "+x_0",
-  "+y_0",
-  "+ellps",
-  "+a",
-  "+b",
-  "+pm",
-  "+towgs84",
-  "+approx",
-];
+  "proj",
+  "lat_0",
+  "lon_0",
+  "lat_1",
+  "lat_ts",
+  "lon_1",
+  "lat_2",
+  "lon_2",
+  "k_0",
+  "x_0",
+  "y_0",
+  "ellps",
+  "a",
+  "b",
+  "pm",
+  "towgs84",
+  "approx",
+].map((v) => "+" + v);
 
 /**
  * Converts GeoTIFF's geokeys to Proj4 string and produces associated data
@@ -141,9 +142,9 @@ export function toProj4(geoKeys: GeoKeys) {
     // Numbers are multipliers from vertical CRS
     if (crs && typeof crs !== "number") {
       if (typeof crs === "string") {
-        proj = decodeProj4(crs);
+        proj = decompressProj4(crs);
       } else {
-        proj = decodeProj4(crs.p);
+        proj = decompressProj4(crs.p);
         x = crs.x;
         y = crs.y;
         z = crs.z || z;
@@ -203,7 +204,7 @@ export function toProj4(geoKeys: GeoKeys) {
       let keyValue = key.o[value];
 
       if (typeof keyValue === "string") {
-        keyValue = decodeProj4(keyValue);
+        keyValue = decompressProj4(keyValue);
       }
 
       if (keyValue !== undefined) {
@@ -321,7 +322,7 @@ export function toProj4(geoKeys: GeoKeys) {
   // The basic example of it is a projection.
 
   if (geoKeys.ProjectionGeoKey && geoKeys.ProjectionGeoKey !== USER_DEFINED) {
-    const conversion = decodeProj4(ProjectionGeoKey[geoKeys.ProjectionGeoKey] || "");
+    const conversion = decompressProj4(ProjectionGeoKey[geoKeys.ProjectionGeoKey] || "");
 
     if (conversion) {
       proj += " +proj=" + conversion;
@@ -332,11 +333,7 @@ export function toProj4(geoKeys: GeoKeys) {
 
   for (const object of PCSKeys) {
     for (const key in object) {
-      const keyDef = object[key];
-
-      if (keyDef === undefined) {
-        continue;
-      }
+      const keyDef = object[key as keyof GeoKeys]!;
 
       let keyValue = geoKeys[key as keyof GeoKeys] as number;
 
@@ -356,7 +353,7 @@ export function toProj4(geoKeys: GeoKeys) {
       }
 
       keyValue *= m;
-      proj += ` +${keyDef.p}=${keyValue}`;
+      proj += " " + decompressProj4(`${keyDef.p}=${keyValue}`);
     }
   }
 
@@ -364,7 +361,7 @@ export function toProj4(geoKeys: GeoKeys) {
   const transformKey = geoKeys.ProjMethodGeoKey || geoKeys.ProjCoordTransGeoKey;
 
   if (transformKey && transformKey !== USER_DEFINED) {
-    const projName = ProjCoordTransGeoKey[transformKey];
+    const projName = decompressProj4(ProjCoordTransGeoKey[transformKey] || "");
 
     if (projName) {
       proj += " +proj=" + projName;
@@ -381,7 +378,7 @@ export function toProj4(geoKeys: GeoKeys) {
   //---------------------//
 
   const projObj = proj4ToObj(proj);
-  transformProj4(projObj, geoKeys);
+  finalizeProj4(projObj, geoKeys);
   proj = objToProj4(projObj, KEYS_ORDER);
 
   //------------//

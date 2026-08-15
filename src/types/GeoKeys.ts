@@ -55,6 +55,15 @@ export interface GeoKeys {
   VerticalCSTypeGeoKey?: number;
   VerticalUnitsGeoKey?: number;
 
+  /** Same as {@link ProjStdParallel1GeoKey} */
+  ProjStdParallelGeoKey?: number;
+  /** Same as {@link ProjNatOriginLongGeoKey} */
+  ProjOriginLongGeoKey?: number;
+  /** Same as {@link ProjNatOriginLatGeoKey} */
+  ProjOriginLatGeoKey?: number;
+  /** Same as {@link ProjScaleAtNatOriginGeoKey} */
+  ProjScaleAtOriginGeoKey?: number;
+
   /** Vertical datum. Vertical datums are not supported by this library. */
   VerticalDatumGeoKey?: number;
 

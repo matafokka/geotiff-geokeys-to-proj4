@@ -19,7 +19,7 @@ Before working on the project, you need to create a database and update the mapp
 
 1. Download PostgreSQL scripts.
 
-1. Extract the downloaded scripts to `src/sql` directory.
+1. Extract the downloaded scripts to `src/sql/EPSG` directory.
 
 1. See the update script's arguments by running `npm run gen:lib -- --help`.
 

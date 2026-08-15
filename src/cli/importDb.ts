@@ -7,7 +7,7 @@ const names = ["Table", "Data", "FKey"];
 
 export async function importDb() {
   const scriptsPromises = names.map(async (name) => {
-    const fileName = join(import.meta.dirname, "..", "sql", `PostgreSQL_${name}_Script.sql`);
+    const fileName = join(import.meta.dirname, "..", "sql", "EPSG", `PostgreSQL_${name}_Script.sql`);
     return (await readFile(fileName)).toString().replace("\uFEFF", ""); // BOM makes PostgreSQL throw a syntax error
   });
 

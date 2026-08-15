@@ -37,7 +37,7 @@ and [proj4js](https://github.com/proj4js/proj4js).
 
 1. Can be transpiled down to ES3 *(any browser from year 2000)*.
 
-1. Sizes at ≈1.1 Mb (≈130 Kb gzipped). Compare that to existing libraries weighting at ≈20 Mb.
+1. Sizes at ≈760 kB (≈128 Kb gzipped). Compare that to `gdal-js` weighting at ≈10 Mb and `gdal` weighting at ≈73 Mb.
 
 ## Installation
 
@@ -180,10 +180,10 @@ Check the [source code](https://github.com/matafokka/geotiff-3d-dem-viewer) for 
 
 ## Tips
 
-1. Load this library with dynamic imports (`const { ... } = await import("geotiff-geokeys-to-proj-4")`).
+1. Prefer dynamic imports: `const { ... } = await import("geotiff-geokeys-to-proj-4")`.
 
-   Even gzipped, this library is huge. If you import it using regular `import` then your users will have to wait while
-   this library is loading.
+   Even gzipped, this library is rather big. If you import it using regular `import` then your users will have to wait
+   while this library is loading.
 
    Use dynamic imports to load it on-demand. Optionally add prefetching.
 
@@ -302,3 +302,6 @@ systems.
 
 1. [geokeys-to-proj4js](https://github.com/GeoTIFF/geokeys-to-proj4js) is an unfinished and probably abandoned project
 with the same goal.
+
+1. [gdal-js](https://github.com/ddohler/gdal-js) and [gdal](https://github.com/naturalatlas/node-gdal) - wrappers around
+[GDAL](https://gdal.org/).
