@@ -122,9 +122,7 @@ export function compressMappings() {
       tokensOrder.push(token);
     }
 
-    if (token) {
-      tokensToOccurrences[token] = prevCount + 1;
-    }
+    tokensToOccurrences[token] = prevCount + 1;
   };
 
   forEachProjString((str) => {
@@ -184,8 +182,7 @@ function forEachProjString(cb: (str: string) => string | void) {
 
   for (const obj of plainObjects) {
     for (const key in obj) {
-      const value = obj[key]!;
-      obj[key] = wrappedCb(value);
+      obj[key] = wrappedCb(obj[key]!);
     }
   }
 
