@@ -146,7 +146,7 @@ export function compressMappings() {
     const occurrences = tokensToOccurrences[token]!;
     const compressed = getCompressedSequence();
 
-    const dictEntrySize = Buffer.byteLength(JSON.stringify({ [compressed]: token }) + ",");
+    const dictEntrySize = Buffer.byteLength(`${compressed}:"${token}",`);
     const compressedTokenSize = Buffer.byteLength(compressed);
     const compressedSize = dictEntrySize + compressedTokenSize * occurrences;
 
