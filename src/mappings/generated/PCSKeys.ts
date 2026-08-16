@@ -11,87 +11,87 @@ export const PCSKeys: PCSKeysMappings = [
   {
     "ProjStdParallel1GeoKey": {
       "u": 1,
-      "p": "±"
+      "p": "´"
     },
     "ProjStdParallel2GeoKey": {
       "u": 1,
-      "p": "²"
+      "p": "µ"
     },
     "ProjCenterLongGeoKey": {
       "u": 1,
-      "p": "£"
+      "p": "¢"
     },
     "ProjCenterLatGeoKey": {
       "u": 1,
-      "p": "¤"
+      "p": "£"
     },
     "ProjCenterEastingGeoKey": {
       "u": 2,
-      "p": "¡"
+      "p": "¦"
     },
     "ProjCenterNorthingGeoKey": {
       "u": 2,
-      "p": "¢"
+      "p": "§"
     },
     "ProjScaleAtCenterGeoKey": {
       "u": 3,
-      "p": "©"
+      "p": "«"
     }
   },
   {
     "ProjNatOriginLongGeoKey": {
       "u": 1,
-      "p": "£"
+      "p": "¢"
     },
     "ProjNatOriginLatGeoKey": {
       "u": 1,
-      "p": "¤"
+      "p": "£"
     },
     "ProjFalseOriginEastingGeoKey": {
       "u": 2,
-      "p": "¡"
+      "p": "¦"
     },
     "ProjFalseOriginNorthingGeoKey": {
       "u": 2,
-      "p": "¢"
+      "p": "§"
     },
     "ProjScaleAtNatOriginGeoKey": {
       "u": 3,
-      "p": "©"
+      "p": "«"
     },
     "ProjStdParallelGeoKey": {
       "u": 1,
-      "p": "±"
+      "p": "´"
     }
   },
   {
     "ProjFalseOriginLongGeoKey": {
       "u": 1,
-      "p": "£"
+      "p": "¢"
     },
     "ProjFalseOriginLatGeoKey": {
       "u": 1,
-      "p": "¤"
+      "p": "£"
     },
     "ProjFalseEastingGeoKey": {
       "u": 2,
-      "p": "¡"
+      "p": "¦"
     },
     "ProjFalseNorthingGeoKey": {
       "u": 2,
-      "p": "¢"
+      "p": "§"
     },
     "ProjOriginLongGeoKey": {
       "u": 1,
-      "p": "£"
+      "p": "¢"
     },
     "ProjOriginLatGeoKey": {
       "u": 1,
-      "p": "¤"
+      "p": "£"
     },
     "ProjScaleAtOriginGeoKey": {
       "u": 3,
-      "p": "©"
+      "p": "«"
     }
   }
 ]

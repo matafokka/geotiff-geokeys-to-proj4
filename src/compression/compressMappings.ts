@@ -137,8 +137,16 @@ export function compressMappings() {
     }
   });
 
+  // Calculate total uncompressed size for each token
+
+  const tokensToUncompressedSize: Record<string, number | undefined> = {};
+
+  for (const token of tokensOrder) {
+    tokensToUncompressedSize[token] = tokensToOccurrences[token]! * Buffer.byteLength(token);
+  }
+
   // Sort descending. This will encode more occurring tokens with less bytes to achieve greater compression ratio.
-  tokensOrder.sort((a, b) => tokensToOccurrences[b]! - tokensToOccurrences[a]!);
+  tokensOrder.sort((a, b) => tokensToUncompressedSize[b]! - tokensToUncompressedSize[a]!);
 
   // Compress each token
 
@@ -150,9 +158,7 @@ export function compressMappings() {
     const compressedTokenSize = Buffer.byteLength(compressed);
     const compressedSize = dictEntrySize + compressedTokenSize * occurrences;
 
-    const uncompressedSize = Buffer.byteLength(token) * occurrences;
-
-    if (uncompressedSize <= compressedSize) {
+    if (tokensToUncompressedSize[token]! <= compressedSize) {
       continue;
     }
 
