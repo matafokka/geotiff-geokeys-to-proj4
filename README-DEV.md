@@ -1,5 +1,11 @@
 # Documentation for the library's developers
 
+## Backlog
+
+The features backlog is located here: https://github.com/users/matafokka/projects/1/views/1
+
+The backlog only tracks features. For bugs, use the [Issues](https://github.com/matafokka/geotiff-geokeys-to-proj4/issues).
+
 ## Mappings
 
 Mappings are generated from the EPSG database. The database is imported into the PostgreSQL server. Then the mappings
