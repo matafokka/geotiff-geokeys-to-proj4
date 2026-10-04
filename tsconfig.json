@@ -2,8 +2,8 @@
   "compilerOptions": {
     "target": "es2023",
     "module": "esnext",
-    "lib": ["ES2023"],
-    "types": ["vite/client", "node"],
+    "lib": ["ESNext"],
+    "types": ["vite/client", "vitest/config", "node"],
     "allowArbitraryExtensions": true,
     "skipLibCheck": true,
 
@@ -17,12 +17,11 @@
     /* Linting */
     "noUnusedLocals": true,
     "noUnusedParameters": true,
-    "erasableSyntaxOnly": true,
     "noFallthroughCasesInSwitch": true,
 
     "paths": {
       "@/*": ["./src/*"]
     }
   },
-  "include": ["src", "tests", "docs", "docs/.vitepress/**/*"]
+  "include": ["src", "tests", "docs", "docs/.vitepress/**/*", "vite.config.ts"]
 }

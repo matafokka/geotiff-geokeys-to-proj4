@@ -35,3 +35,14 @@ Run `npm run gen:lib:code`.
 ### Updating PostgreSQL database only
 
 Run `npm run gen:lib:db`.
+
+## Testing and benchmarking
+
+Both are handled by Vitest.
+
+Both can be run by `npm run test` and `npm run bench` commands respectively.
+
+Both are co-located with the code and live inside `__tests__` directory.
+
+The benchmarks are mainly to check if performance optimizations really produce the desired effect. It is best to run
+only one benchmark as to quickly preview the performance changes.

@@ -37,7 +37,7 @@ and [proj4js](https://github.com/proj4js/proj4js).
 
 1. Can be transpiled down to ES3 *(any browser from year 2000)*.
 
-1. Sizes at ≈760 kB (≈128 Kb gzipped). Compare that to `gdal-js` weighting at ≈10 Mb and `gdal` weighting at ≈73 Mb.
+1. Sizes at ≈252 KB (≈120 KB gzipped). Compare that to `gdal-js` weighting at ≈10 MB and `gdal` weighting at ≈73 MB.
 
 ## Installation
 

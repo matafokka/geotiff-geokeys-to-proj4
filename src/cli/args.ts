@@ -1,4 +1,4 @@
-import { parseFloatLoose } from "@/utils/misc";
+import { parseFloatLoose } from "@/shared/utils/misc";
 
 const DEFAULT_PORT = 5432;
 

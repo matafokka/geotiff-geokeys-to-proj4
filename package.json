@@ -1,7 +1,7 @@
 {
   "type": "module",
   "name": "geotiff-geokeys-to-proj4",
-  "version": "2026.08.16",
+  "version": "2026.10.04",
   "description": "A library that converts GeoTIFF's geokeys to Proj4 string",
   "license": "BSD-3-Clause",
   "author": "matafokka",
@@ -18,11 +18,9 @@
     "geotiff-geokeys",
     "geotiff-geo-keys"
   ],
-
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
-
   "exports": {
     ".": {
       "require": {
@@ -39,26 +37,22 @@
       }
     }
   },
-
   "scripts": {
     "dev": "npm run gen:docs && vitepress dev docs",
     "preview": "npm run gen:docs && vitepress preview docs",
     "type-check": "tsc --noEmit",
-    "test": "tsx tests/test.ts",
-
+    "test": "vitest --watch=false",
+    "bench": "vitest bench --watch=false",
     "build": "run-s build:lib build:docs",
     "build:lib": "vite build",
     "build:docs": "npm run gen:docs && vitepress build docs",
-
     "gen:lib:db": "npm run gen:lib -- --mode db",
     "gen:lib:code": "npm run gen:lib -- --mode code",
-    "gen:lib": "tsx src/cli/update",
-
+    "gen:lib": "tsx src/cli/main",
     "gen:docs": "run-p gen:docs:api gen:docs:homepage",
     "gen:docs:api": "typedoc",
     "gen:docs:homepage": "tsx docs/scripts/generate-home-page"
   },
-
   "devDependencies": {
     "@eslint/compat": "^2.1.0",
     "@eslint/js": "^10.0.1",
@@ -66,6 +60,7 @@
     "@eslint/markdown": "^8.0.3",
     "@types/node": "^26.1.2",
     "@types/pg": "^8.21.0",
+    "colorette": "^2.0.20",
     "eslint": "^10.8.0",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.5.6",
@@ -83,6 +78,7 @@
     "typescript-eslint": "^8.66.0",
     "unplugin-dts": "^1.0.3",
     "vite": "^8.2.1",
-    "vitepress": "^1.6.4"
+    "vitepress": "^1.6.4",
+    "vitest": "^5.0.3"
   }
 }
