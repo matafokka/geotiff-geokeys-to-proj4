@@ -6,6 +6,7 @@
     "types": ["vite/client", "vitest/config", "node"],
     "allowArbitraryExtensions": true,
     "skipLibCheck": true,
+    "allowJs": true,
 
     /* Bundler mode */
     "moduleResolution": "bundler",
@@ -23,5 +24,5 @@
       "@/*": ["./src/*"]
     }
   },
-  "include": ["src", "tests", "docs", "docs/.vitepress/**/*", "vite.config.ts"]
+  "include": ["src", "tests", "docs", "docs/.vitepress/**/*", "vite.config.ts", "eslint.config.mjs"]
 }

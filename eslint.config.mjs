@@ -7,19 +7,21 @@ import unusedImports from "eslint-plugin-unused-imports";
 import eslintConfigPrettier from "eslint-config-prettier/flat";
 import eslintPluginPrettierRecommended from "eslint-plugin-prettier/recommended";
 import { defineConfig } from "eslint/config";
-import { includeIgnoreFile } from "@eslint/compat";
-import { fileURLToPath } from "node:url";
-
-const gitignorePath = fileURLToPath(new URL(".gitignore", import.meta.url));
+import gitignore from "eslint-config-flat-gitignore";
 
 export default defineConfig([
-  includeIgnoreFile(gitignorePath, "Imported .gitignore patterns"),
+  gitignore({ recursive: true }),
 
   {
     files: ["**/*.{js,mjs,cjs,ts,mts,cts}"],
     plugins: { js },
     extends: ["js/recommended"],
-    languageOptions: { globals: { ...globals.browser, ...globals.node } },
+    languageOptions: {
+      globals: { ...globals.browser, ...globals.node },
+      parserOptions: {
+        projectService: true,
+      },
+    },
   },
 
   tseslint.configs.recommended,
@@ -83,5 +85,5 @@ export default defineConfig([
     },
   },
 
-  { ignores: ["**/dist/**/*", "**/tsconfig.json", "**/tsconfig.*.json"] },
+  { ignores: ["**/dist/**/*", "**/.vitepress/cache/**/*", "**/tsconfig.json", "**/tsconfig.*.json"] },
 ]);

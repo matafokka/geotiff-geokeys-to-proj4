@@ -21,6 +21,7 @@ jobs:
           node-version: 24
           registry-url: https://registry.npmjs.org
       - run: npm install --verbose
+      - run: npm run lint
       - run: npm run test
       - run: npm run build:lib
       - run: npm publish --verbose
