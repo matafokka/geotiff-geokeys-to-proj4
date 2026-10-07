@@ -1,7 +1,7 @@
 {
   "type": "module",
   "name": "geotiff-geokeys-to-proj4",
-  "version": "2026.10.04",
+  "version": "2026.10.07",
   "description": "A library that converts GeoTIFF's geokeys to Proj4 string",
   "license": "BSD-3-Clause",
   "author": "matafokka",
@@ -16,7 +16,13 @@
     "proj4js",
     "geotiff-keys",
     "geotiff-geokeys",
-    "geotiff-geo-keys"
+    "geotiff-geo-keys",
+    "raster",
+    "gis",
+    "geospatial",
+    "geo",
+    "map",
+    "maps"
   ],
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
