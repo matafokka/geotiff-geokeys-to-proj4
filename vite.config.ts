@@ -22,7 +22,7 @@ export default defineConfig({
     sourcemap: true,
 
     lib: {
-      entry: resolve(import.meta.dirname, "src/lib/index.ts"),
+      entry: resolve(import.meta.dirname, "src/index.ts"),
       name: "geokeysToProj4",
       fileName: "index",
       formats: ["es", "cjs"],
