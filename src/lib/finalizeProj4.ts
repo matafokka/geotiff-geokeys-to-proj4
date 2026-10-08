@@ -24,7 +24,7 @@ export function finalizeProj4(obj: Record<string, string | undefined>, geoKeys: 
     delete obj["+lat_0"];
   }
 
-  const crsCode = geoKeys.ProjectedCRSGeoKey || geoKeys.ProjectedCSTypeGeoKey;
+  const crsCode = geoKeys.ProjectedCRSGeoKey ?? geoKeys.ProjectedCSTypeGeoKey;
 
   // Web Mercator requires a sphere.
   // Original CRS defines an ellipsoid for some reason, it also should be replaced with a sphere.

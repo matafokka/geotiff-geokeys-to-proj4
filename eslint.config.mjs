@@ -22,6 +22,12 @@ export default defineConfig([
         projectService: true,
       },
     },
+    rules: {
+      "@typescript-eslint/strict-boolean-expressions": [
+        "error",
+        { allowNullableBoolean: true, allowNullableString: true },
+      ],
+    },
   },
 
   tseslint.configs.recommended,

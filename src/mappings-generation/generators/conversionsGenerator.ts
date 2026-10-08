@@ -67,7 +67,7 @@ export const conversionsGenerator = mappingGenerator<Row, string>({
 
       const uomCode = param.f3;
 
-      if (uomCode && unitsGenerator.state[uomCode]) {
+      if (uomCode !== null && unitsGenerator.state[uomCode]) {
         let { m } = unitsGenerator.state[uomCode];
 
         if (angularUnitsSubstrings.some((str) => paramDef.includes(str))) {

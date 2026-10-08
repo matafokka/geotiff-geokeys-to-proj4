@@ -62,7 +62,7 @@ export class Groups {
     // Get group and count
 
     let group = this.itemsToGroup.get(str);
-    const count = init.count || 1;
+    const count = init.count ?? 1;
 
     // Update a group if exists
 

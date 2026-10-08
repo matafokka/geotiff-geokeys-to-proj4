@@ -71,6 +71,7 @@ export function mappingGenerator<Row extends WithEpsgId, Mapped>(
   let stateBak: Record<string, Mapped | undefined> = {};
 
   const generate = once(async () => {
+    // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
     if (opts.dependencies?.length) {
       await Promise.all(opts.dependencies?.map((dep) => dep.generate()));
     }

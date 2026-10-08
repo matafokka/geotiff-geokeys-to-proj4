@@ -52,7 +52,7 @@ export const unitsGenerator = mappingGenerator<Row, UnitsObj>({
       return;
     }
 
-    baseUnit = KnownBaseUnits[row.base_unit || ""];
+    baseUnit = row.base_unit ? KnownBaseUnits[row.base_unit] : undefined;
 
     if (!baseUnit) {
       return;

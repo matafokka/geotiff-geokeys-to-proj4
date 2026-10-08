@@ -60,7 +60,7 @@ export class PairsStats {
       this.pairs.set(a, paired);
     }
 
-    const occurrences = (paired.get(b) || 0) + count;
+    const occurrences = (paired.get(b) ?? 0) + count;
     paired.set(b, occurrences);
 
     const version = this.bumpVersion(a, b);
@@ -128,13 +128,13 @@ export class PairsStats {
       this.versions.set(a, versions);
     }
 
-    const version = (versions.get(b) || 0) + 1;
+    const version = (versions.get(b) ?? 0) + 1;
     versions.set(b, version);
 
     return version;
   }
 
   private getVersion(a: number, b: number): number {
-    return this.versions.get(a)?.get(b) || 0;
+    return this.versions.get(a)?.get(b) ?? 0;
   }
 }

@@ -58,27 +58,27 @@ export function toProj4(geoKeys: GeoKeys) {
   const errors: ConversionErrors = {};
 
   // First, get CRS, both geographic and projected
-  const geographicCode = geoKeys.GeodeticCRSGeoKey || geoKeys.GeographicTypeGeoKey;
-  const projectedCode = geoKeys.ProjectedCRSGeoKey || geoKeys.ProjectedCSTypeGeoKey;
+  const geographicCode = geoKeys.GeodeticCRSGeoKey ?? geoKeys.GeographicTypeGeoKey;
+  const projectedCode = geoKeys.ProjectedCRSGeoKey ?? geoKeys.ProjectedCSTypeGeoKey;
 
-  if (geographicCode && projectedCode) {
+  if (geographicCode !== undefined && projectedCode !== undefined) {
     errors.bothGCSAndPCSAreSet = true;
   }
 
-  const crsKey = geographicCode || projectedCode;
+  const crsKey = geographicCode ?? projectedCode;
 
-  if (crsKey) {
+  if (crsKey !== undefined) {
     const crs = CRS[crsKey];
 
     // Numbers are multipliers from vertical CRS
-    if (crs && typeof crs !== "number") {
+    if (crs !== undefined && typeof crs !== "number") {
       if (typeof crs === "string") {
         proj = decompressProj4(crs);
       } else {
         proj = decompressProj4(crs.p);
         x = crs.x;
         y = crs.y;
-        z = crs.z || z;
+        z = crs.z ?? z;
       }
     } else if (crsKey !== USER_DEFINED) {
       errors.CRSNotSupported = crsKey;
@@ -89,19 +89,19 @@ export function toProj4(geoKeys: GeoKeys) {
   //   Read vertical CS  //
   //---------------------//
 
-  const verticalCode = geoKeys.VerticalGeoKey || geoKeys.VerticalCSTypeGeoKey;
+  const verticalCode = geoKeys.VerticalGeoKey ?? geoKeys.VerticalCSTypeGeoKey;
 
-  if (verticalCode && verticalCode !== USER_DEFINED) {
+  if (verticalCode !== undefined && verticalCode !== USER_DEFINED) {
     const verticalCs = CRS[verticalCode]; // Yes, that's CRS, not CS. Either vertical CRS or geographic 3D CRS may be set.
 
     if (typeof verticalCs === "number") {
       z = verticalCs;
-    } else if ((verticalCs as CRSObj)?.z) {
+    } else if ((verticalCs as CRSObj)?.z !== undefined) {
       z = (verticalCs as Required<CRSObj>).z;
     } else {
       errors.verticalCsNotSupported = verticalCode;
     }
-  } else if (geoKeys.VerticalUnitsGeoKey) {
+  } else if (geoKeys.VerticalUnitsGeoKey !== undefined) {
     const units = Units[geoKeys.VerticalUnitsGeoKey];
 
     if (units) {
@@ -110,7 +110,7 @@ export function toProj4(geoKeys: GeoKeys) {
       errors.verticalCsUnitsNotSupported = geoKeys.VerticalUnitsGeoKey;
     }
 
-    if (geoKeys.VerticalDatumGeoKey) {
+    if (geoKeys.VerticalDatumGeoKey !== undefined) {
       errors.verticalDatumsNotSupported = geoKeys.VerticalDatumGeoKey;
     }
   }
@@ -128,7 +128,7 @@ export function toProj4(geoKeys: GeoKeys) {
     for (const name of key.n) {
       const value = geoKeys[name];
 
-      if (!value) {
+      if (value === undefined) {
         continue;
       }
 
@@ -167,7 +167,7 @@ export function toProj4(geoKeys: GeoKeys) {
     const unit = geoKeys[name];
     let m: number | undefined;
 
-    if (!unit) {
+    if (unit === undefined) {
       continue;
     }
 
@@ -176,10 +176,10 @@ export function toProj4(geoKeys: GeoKeys) {
       const sizeKeyName = (key.substring(0, key.length - 7) + "SizeGeoKey") as keyof GeoKeys & `${string}SizeGeoKey`;
       const size = geoKeys[sizeKeyName];
 
-      if (size) {
-        m = size;
-      } else {
+      if (size === undefined) {
         errors[(sizeKeyName + "NotDefined") as keyof ConversionErrors & `${string}NotDefined`] = true;
+      } else {
+        m = size;
       }
 
       unitsDescriptions[name] = sizeKeyName === "GeogAngularUnitSizeGeoKey" ? "degree" : "metre";
@@ -189,17 +189,17 @@ export function toProj4(geoKeys: GeoKeys) {
       unitsDescriptions[name] = unitsObj.t;
     }
 
-    if (m) {
+    if (m === undefined) {
+      // This EPSG key doesn't exist. Assuming meters or degrees.
+      m = 1;
+      errors[(key + "NotSupported") as keyof GeokeysNotSupportedErrors] = unit;
+    } else {
       unitDefs[name] = true;
 
       if (key === "GeogAngularUnitsGeoKey") {
         m = radToDeg(m); // Radians are angular base units. Must convert to degrees.
         unitsDescriptions[key] = unitsDescriptions[key]?.replaceAll("radian", "degree") as CoordinateUnits;
       }
-    } else {
-      // This EPSG key doesn't exist. Assuming meters or degrees.
-      m = 1;
-      errors[(key + "NotSupported") as keyof GeokeysNotSupportedErrors] = unit;
     }
 
     units[name] = m;
@@ -210,12 +210,13 @@ export function toProj4(geoKeys: GeoKeys) {
   //---------------------//
 
   const a =
-    (geoKeys.EllipsoidSemiMajorAxisGeoKey || geoKeys.GeogSemiMajorAxisGeoKey || 0) * units.GeogLinearUnitsGeoKey;
+    (geoKeys.EllipsoidSemiMajorAxisGeoKey ?? geoKeys.GeogSemiMajorAxisGeoKey ?? 0) * units.GeogLinearUnitsGeoKey;
 
-  let b = (geoKeys.EllipsoidSemiMinorAxisGeoKey || geoKeys.GeogSemiMinorAxisGeoKey || 0) * units.GeogLinearUnitsGeoKey;
+  let b = (geoKeys.EllipsoidSemiMinorAxisGeoKey ?? geoKeys.GeogSemiMinorAxisGeoKey ?? 0) * units.GeogLinearUnitsGeoKey;
 
-  const invFlattening = geoKeys.EllipsoidInvFlatteningGeoKey || geoKeys.GeogInvFlatteningGeoKey;
+  const invFlattening = geoKeys.EllipsoidInvFlatteningGeoKey ?? geoKeys.GeogInvFlatteningGeoKey;
 
+  // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions -- values of 0 are invalid
   if (invFlattening && a) {
     // Can't calculate semi minor axis if semi major axis is missing
     b = a - a / invFlattening;
@@ -234,14 +235,17 @@ export function toProj4(geoKeys: GeoKeys) {
   }
 
   // Get prime meridian
-  const pm = geoKeys.PrimeMeridianLongitudeGeoKey || geoKeys.GeogPrimeMeridianLongGeoKey;
+  const pm = geoKeys.PrimeMeridianLongitudeGeoKey ?? geoKeys.GeogPrimeMeridianLongGeoKey;
 
+  // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions -- defaults to 0 from Greenwich
   if (pm) {
     proj += " +pm=" + pm * units.GeogAngularUnitsGeoKey;
   }
 
   // To WGS key
-  if (geoKeys.GeogTOWGS84GeoKey) {
+
+  // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
+  if (geoKeys.GeogTOWGS84GeoKey?.length) {
     proj += " +towgs84=" + geoKeys.GeogTOWGS84GeoKey.join();
   }
 
@@ -252,7 +256,7 @@ export function toProj4(geoKeys: GeoKeys) {
   // This key (despite its name) defines a conversion -- a method (and its parameters) which converts coordinates.
   // The basic example of it is a projection.
 
-  if (geoKeys.ProjectionGeoKey && geoKeys.ProjectionGeoKey !== USER_DEFINED) {
+  if (geoKeys.ProjectionGeoKey !== undefined && geoKeys.ProjectionGeoKey !== USER_DEFINED) {
     const conversion = ProjectionGeoKey[geoKeys.ProjectionGeoKey];
 
     if (conversion) {
@@ -289,13 +293,13 @@ export function toProj4(geoKeys: GeoKeys) {
   }
 
   // This key should take precedence over all other keys
-  const transformKey = geoKeys.ProjMethodGeoKey || geoKeys.ProjCoordTransGeoKey;
+  const transformKey = geoKeys.ProjMethodGeoKey ?? geoKeys.ProjCoordTransGeoKey;
 
-  if (transformKey && transformKey !== USER_DEFINED) {
-    const projName = decompressProj4(ProjCoordTransGeoKey[transformKey] || "");
+  if (transformKey !== undefined && transformKey !== USER_DEFINED) {
+    const projCompressed = ProjCoordTransGeoKey[transformKey];
 
-    if (projName) {
-      proj += " " + projName;
+    if (projCompressed) {
+      proj += " " + decompressProj4(projCompressed);
     } else {
       errors.coordinateTransformationNotSupported = transformKey;
     }

@@ -36,10 +36,12 @@ export async function writeMapping(options: WriteMappingOptions) {
 
   const lines = ["// DO NOT EDIT! This file has been generated automatically.", "", "/* eslint-disable */", ""];
 
+  // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
   if (options.before?.length) {
     lines.push(options.before.join("\n"), "");
   }
 
+  // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
   if (options.jsdoc?.length) {
     lines.push(jsdocToString(options.jsdoc));
   }

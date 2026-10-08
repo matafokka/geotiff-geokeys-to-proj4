@@ -123,7 +123,7 @@ export const crsGenerator = mappingGenerator<Row, string | number | CRSObj>({
       const horizontalCRS = fetchedCRS[row.compound_horizontal_crs!];
       const z = verticalCsGenerator.state[row.vertical_cs!];
 
-      if (!z) {
+      if (z === undefined) {
         return;
       }
 
@@ -139,7 +139,7 @@ export const crsGenerator = mappingGenerator<Row, string | number | CRSObj>({
 
     // Return multiplier for vertical CRS
     if (row.type === "vertical") {
-      return verticalCsGenerator.state[row.cs_id!] || verticalCsGenerator.state[row.base_crs_cs_code!];
+      return verticalCsGenerator.state[row.cs_id!] ?? verticalCsGenerator.state[row.base_crs_cs_code!];
     }
 
     let conversion = conversionsGenerator.state[row.conversion!];
@@ -152,7 +152,7 @@ export const crsGenerator = mappingGenerator<Row, string | number | CRSObj>({
       conversion = "+proj=" + (row.type === "geocentric" ? "geocent" : "longlat");
     }
 
-    const datum = datumsGenerator.state[row.datum!] || datumsGenerator.state[row.base_datum!];
+    const datum = datumsGenerator.state[row.datum!] ?? datumsGenerator.state[row.base_datum!];
 
     if (!datum) {
       return;
@@ -208,7 +208,7 @@ export const crsGenerator = mappingGenerator<Row, string | number | CRSObj>({
       const directionsCounts: Record<string, number | undefined> = {};
 
       for (const direction of orientation) {
-        directionsCounts[direction] = (directionsCounts[direction] || 0) + 1;
+        directionsCounts[direction] = (directionsCounts[direction] ?? 0) + 1;
 
         if (directionsCounts[direction] === 1) {
           continue;
@@ -247,7 +247,7 @@ export const crsGenerator = mappingGenerator<Row, string | number | CRSObj>({
       uomNames.y = uomNames.x;
     }
 
-    if (!uomNames.z) {
+    if (uomNames.z === undefined) {
       if (isGeographic3d || isVertical) {
         return;
       }
@@ -262,7 +262,7 @@ export const crsGenerator = mappingGenerator<Row, string | number | CRSObj>({
     let isAngle = false;
 
     for (const axis of axes) {
-      if (!uomNames[axis]) {
+      if (uomNames[axis] === undefined) {
         continue;
       }
 
@@ -295,7 +295,7 @@ export const crsGenerator = mappingGenerator<Row, string | number | CRSObj>({
     // Copy additional CRS
 
     for (const key in AdditionalCRS) {
-      if (!crs[key] && AdditionalCRS[key]) {
+      if (crs[key] === undefined && AdditionalCRS[key]) {
         crs[key] = AdditionalCRS[key];
       }
     }
@@ -305,7 +305,7 @@ export const crsGenerator = mappingGenerator<Row, string | number | CRSObj>({
 
       // If every coordinate multiplier is 1 then leave string only
 
-      if (typeof value === "object" && value.x === 1 && value.y === 1 && (!value.z || value.z === 1)) {
+      if (typeof value === "object" && value.x === 1 && value.y === 1 && (value.z === undefined || value.z === 1)) {
         value = value.p;
       }
 

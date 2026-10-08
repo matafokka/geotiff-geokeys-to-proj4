@@ -60,15 +60,15 @@ export const datumsGenerator = mappingGenerator<Row, string>(() => {
 
       addedIds[id] = true;
 
-      const meridian = row.pm || row.ref_pm;
-      const ellipsoid = row.ellipsoid || row.ref_ellipsoid;
+      const meridian = row.pm ?? row.ref_pm;
+      const ellipsoid = row.ellipsoid ?? row.ref_ellipsoid;
       let str = "";
 
-      if (ellipsoid && ellipsoid in ellipsoidsGenerator.state) {
+      if (ellipsoid !== null && ellipsoid in ellipsoidsGenerator.state) {
         str += ellipsoidsGenerator.state[ellipsoid]!;
       }
 
-      if (meridian && meridian in meridiansGenerator.state) {
+      if (meridian !== null && meridian in meridiansGenerator.state) {
         str += " +pm=" + meridiansGenerator.state[meridian];
       }
 

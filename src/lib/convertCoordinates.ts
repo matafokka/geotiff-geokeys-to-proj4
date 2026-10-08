@@ -16,6 +16,6 @@ export function convertCoordinates(
   return {
     x: coord.x * parameters.x,
     y: coord.y * parameters.y,
-    z: coord.z ? coord.z * parameters.z : 0,
+    z: (coord.z ?? 0) * parameters.z,
   };
 }

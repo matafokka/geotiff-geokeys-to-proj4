@@ -45,7 +45,7 @@ export const ellipsoidsGenerator = mappingGenerator<Row, string>({
       for (const name in EllipsoidsNamesToProj) {
         if (row.name.startsWith(name) && name.length > prevName.length) {
           prevName = name;
-          ellipsoidString = EllipsoidsNamesToProj[name] || "";
+          ellipsoidString = EllipsoidsNamesToProj[name] ?? "";
         }
       }
     }
@@ -65,12 +65,15 @@ export const ellipsoidsGenerator = mappingGenerator<Row, string>({
 
     let b: number | undefined;
 
+    // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions -- 0 value is invalid
     if (row.f) {
       b = a - a / row.f;
+      // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions -- 0 value is invalid
     } else if (row.b) {
       b = row.b * uom.m;
     }
 
+    // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions -- 0 value is invalid
     if (!a || !b) {
       return;
     }

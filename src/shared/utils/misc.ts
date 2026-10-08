@@ -26,5 +26,6 @@ export function cloneWithJson<T>(value: T): T {
 
 /** Checks if value is an object with `then()` method */
 export function isThenable(value: unknown): value is PromiseLike<unknown> {
+  // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
   return !!value && typeof (value as any).then === "function";
 }
