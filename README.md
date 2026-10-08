@@ -6,30 +6,30 @@ This library converts GeoTIFF's geokeys to Proj4 string for correct image proces
 
 ## Rationale
 
-Every GeoTIFF has a Coordinate Reference System (CRS). CRS in combination with georeferencing data defines where pixel
+Every GeoTIFF has a Coordinate Reference System (CRS). A CRS in combination with georeferencing data defines where pixel
 coordinates physically are on Earth.
 
 These CRS may be quite different from what you may find in, for example, Leaflet or OpenLayers where WGS
-*(which is a CRS too)* is used by default.
+*(which is also a CRS)* is used by default.
 
 To process the images, you need to convert image coordinates from one CRS to another.
 
 [proj4js](https://github.com/proj4js/proj4js) is the simplest tool to do that. Give it an **input CRS**
 (whatever GeoTIFF is using), an **output CRS** (whatever your software is using), and a **coordinate** on an image.
-It'll transform coordinate from input to output CRS in a pinch.
+It'll transform a coordinate from the input to output CRS in a pinch.
 
 **Note:** Proj4 calls CRS a projection which is quite confusing.
 
 GeoTIFF encodes CRS information in **geokeys** - key-value pairs. Geokeys are really hard to handle and require external
-data sources to get transformation parameters from. Here were this library comes in: it already includes all necessary
-parameters and it'll convert geokeys to proj4 string.
+data sources from which to get transformation parameters. This is where this library comes in: it already includes all
+necessary parameters, and it'll convert geokeys to proj4 string.
 
 ## Features
 
 1. Intended to be used with [geotiff.js](https://github.com/geotiffjs/geotiff.js/)
 and [proj4js](https://github.com/proj4js/proj4js).
 
-   It's basically a glue between these libraries. Can be used with the alternatives *(if any exist)*.
+   It's basically a glue between these libraries. It can be used with the alternatives *(if any exist)*.
 
 1. Designed for everything: frontend, backend, desktop apps, mobile apps, etc.
 
@@ -37,7 +37,7 @@ and [proj4js](https://github.com/proj4js/proj4js).
 
 1. Can be transpiled down to ES3 *(any browser from year 2000)*.
 
-1. Sizes at ≈252 KB (≈120 KB gzipped). Compare that to `gdal-js` weighting at ≈10 MB and `gdal` weighting at ≈73 MB.
+1. Sizes at ≈252 KB (≈120 KB gzipped). Compare that to `gdal-js` weighing in at ≈10 MB and `gdal` weighingin  at ≈73 MB.
 
 ## Installation
 
@@ -50,7 +50,7 @@ Or just this library: `npm i geotiff-geokeys-to-proj4`.
 This is an example of image processing with [geotiff.js](https://github.com/geotiffjs/geotiff.js/)
 and [proj4js](https://github.com/proj4js/proj4js).
 
-**Note**: In real world, you probably need to parallelize image processing. See [Tips](#tips) for more info.
+**Note**: In the real applications, you probably need to parallelize image processing. See [Tips](#tips) for more info.
 
 ```ts
 import { fromBlob, type GeoTIFFImage } from "geotiff";
@@ -126,7 +126,7 @@ async function processImage(image: GeoTIFFImage) {
       // 2. Adding this value to top-left corner coordinates.
       //    This results in "global" coordinates in CRS units.
       //
-      // This works because image is transformed by Affine Transformation
+      // This works because the image is transformed by an affine transformation
       // which preserves parallelism.
       //
       // Warning: this logic works only for the source CRS.
@@ -137,22 +137,24 @@ async function processImage(image: GeoTIFFImage) {
       const crsY = originY + y * ySize;
 
       // DEM or geocentric CRS only: Z coordinate is the pixel's value.
-      // If you don't need heights then you may omit Z coordinate entirely.
+      // If you don't need heights, you may omit Z coordinate entirely.
       //
       // In practice, you may encounter DEMs with multiple bands,
       // and heights may not be encoded in the first band.
-      // GeoTIFF specification doesn't limit that in any way.
+      // The GeoTIFF specification doesn't limit that in any way.
       // Handle these situations as you see fit.
 
       const crsZ = band0[x];
 
       // Convert coordinates for projection
       const point = projObj.convertCoordinates({ x: crsX, y: crsY, z: crsZ });
+
       // Or:
-      const point = convertCoordinates(
-        { x: crsX, y: crsY, z: crsZ },
-        projObj.conversionParameters,
-      );
+
+      // const point = convertCoordinates(
+      //   { x: crsX, y: crsY, z: crsZ },
+      //   projObj.conversionParameters,
+      // );
 
       // Project into the target CRS
       const projectedPoint = projection.forward(point);
@@ -180,12 +182,12 @@ Check the [source code](https://github.com/matafokka/geotiff-3d-dem-viewer) for 
 
 ## Tips
 
-1. Prefer dynamic imports: `const { ... } = await import("geotiff-geokeys-to-proj-4")`.
+1. Prefer dynamic imports: `const { ... } = await import("geotiff-geokeys-to-proj4")`.
 
-   Even gzipped, this library is rather big. If you import it using regular `import` then your users will have to wait
-   while this library is loading.
+   Even gzipped, this library is rather big. If you import it using a regular `import`, your users will have to wait
+   while this library loads.
 
-   Use dynamic imports to load it on-demand. Optionally add prefetching.
+   Use dynamic imports to load it on demand. Optionally add prefetching.
 
 1. Parallelize image processing.
 
@@ -199,14 +201,14 @@ Check the [source code](https://github.com/matafokka/geotiff-3d-dem-viewer) for 
 
 There's seemingly no document that mentions which geokeys should take precedence over which.
 
-This library does what seems to be logical but this might be wrong.
+This library does what seems to be logical, but this might be wrong.
 
 If you know anything about it then please create an issue and tell whether current behavior is wrong (and how to fix it)
 or right (so this text will be removed).
 
 ### Local depth is not supported
 
-Local depth is not supported because reference points are needed. Following has been excluded:
+Local depth is not supported because reference points are needed. THe following have been excluded:
 
 1. Vertical CS: 1049 and 1050.
 2. Vertical CRS: 8378 and 8897.
@@ -215,25 +217,25 @@ Local depth is not supported because reference points are needed. Following has 
 
 Vertical datums are not supported at all because mappings are needed.
 
-If you have at least some mappings please post them in an issue, they'll be integrated into the library.
+If you have at least some mappings, please post them in an issue. They'll be integrated into the library.
 
 ## FAQ
 
 ### How is it different from [epsg-index](https://github.com/derhuerst/epsg-index)?
 
-`epsg-index` only provides projections definitions, GeoTIFF uses more than that.
+`epsg-index` only provides projections definitions. GeoTIFF uses more than that.
 
 ### How does it compare to battle-proven libraries such as GDAL?
 
 **Pros:**
 
 1. Can be used in any JS environment like any other JS library. No need for WebAssembly or wrappers.
-1. Faster than a wrapped library because there's no inter-process communication. The whole things runs synchronously.
+1. Faster than a wrapped library because there's no inter-process communication. The whole thing runs synchronously.
 1. Way lighter than GDAL and probably others.
 
 **Cons:**
 
-1. Not as widely-used as GDAL and others, so community knowledge is lacking. That's why there are
+1. Not as widely used as GDAL and others, so community knowledge is lacking. That's why there are
 [unresolved issues](#known-issues).
 
 ### This library produces wrong results!
@@ -241,12 +243,12 @@ If you have at least some mappings please post them in an issue, they'll be inte
 This library only maps geokeys to their Proj4 definitions and builds a final Proj4 string. It doesn't perform any
 projections.
 
-If you've encountered a bug please take a look at Proj4 string first and compare it to a string generated by a GIS.
-If something is fundamentally wrong then it's the issue of this library. Otherwise, there's something wrong with Proj4.
+If you've encountered a bug, please take a look at the Proj4 string first and compare it to a string generated by a GIS.
+If something is fundamentally wrong, it's an issue with this library. Otherwise, there's something wrong with Proj4.
 
 Be careful when comparing results with [epsg.io](https://epsg.io). While [epsg.io](https://epsg.io) is mostly right,
 it's not an official data source. For example, [epsg.io](https://epsg.io) maps CRS `21780` to `+proj=somerc`
-but the right projection seems to be `+proj=omerc`.
+but the correct projection seems to be `+proj=omerc`.
 
 Redundant parameters *(for example, `+a` and `+b` that are the same as `+ellps`)* are not a bug.
 This behavior simplifies development, increases performance by not making useless comparisons and ensures that the right
@@ -258,17 +260,18 @@ Missing `+units` is also not a bug because `convertCoordinates()` should be used
 
 Please request an update by creating an issue.
 
-But EPSG rarely introduces major changes so even 1 year old data should be just fine.
+But EPSG rarely introduces major changes so even one-year old data should be just fine.
 
 ### Why the data is outdated though?
 
-Because [epsg.org](https://epsg.org) doesn't provide public access to their database.
+Because [epsg.org](https://epsg.org) doesn't provide public access to its database.
 
 You need to register an account to download the database.
 
 There's no API to do so.
 
-Because client's UI and backend's endpoints might change in the future, there's no point in automating the updates.
+Because the client's UI and the backend's endpoints might change in the future, there's no point in automating
+the updates.
 
 ### What data sources are used?
 
@@ -276,7 +279,7 @@ Because client's UI and backend's endpoints might change in the future, there's 
 
 1. [Community data](EPSG/data/AdditionalCRS.js).
 
-1. [epsg.io](https://epsg.io) is used to selectively check if Proj4 strings are correct.
+1. [epsg.io](https://epsg.io) is used to selectively check whether the Proj4 strings are correct.
 
 ## Contributing
 
@@ -285,7 +288,8 @@ You can contribute by:
 1. Solving [known issues](#known-issues).
 1. Reporting bugs.
 1. Providing suggestions.
-1. Everything else that comes to mind.
+1. Implementing [features](https://github.com/users/matafokka/projects/1/views/1).
+1. Doing everything else that comes to mind.
 
 Thank you for your support!
 
