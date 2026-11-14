@@ -59,7 +59,7 @@ export function proj4ToObj(str: string) {
  * @param order Order in which keys should appear in the string. Example: `["+proj", "+towgs84"]`
  * @returns Proj4 string
  */
-export function objToProj4(obj: Record<string, string | undefined>, order: string[] = []) {
+export function objToProj4(obj: Record<string, string | number | undefined>, order: string[] = []) {
   const keys = order.concat(Object.keys(obj));
   const processedKeys: Record<string, true | undefined> = {};
   const pairs: string[][] = [];
@@ -70,7 +70,7 @@ export function objToProj4(obj: Record<string, string | undefined>, order: strin
     }
 
     processedKeys[key] = true;
-    pairs.push([key, obj[key] || ""]);
+    pairs.push([key, (obj[key] ?? "") + ""]);
   }
 
   return keyValuesToProj4(pairs);

@@ -6,9 +6,10 @@ import type { WithEpsgId } from "@/mappings-generation/types/misc";
 import { radToDeg } from "@/shared/utils/math";
 import { toDeg } from "@/mappings-generation/generators/utils/toDeg";
 import { unitsGenerator } from "@/mappings-generation/generators/unitsGenerator";
+import { objToProj4 } from "@/shared/utils/proj4";
 
 interface Row extends WithEpsgId {
-  method: string;
+  method: number;
   params: {
     f1: number;
     f2: number | null;
@@ -46,11 +47,13 @@ export const conversionsGenerator = mappingGenerator<Row, string>({
   dependencies: [unitsGenerator],
 
   onEach: (row) => {
-    let method = Methods[row.method];
+    const method = Methods[row.method];
 
     if (!method) {
       return;
     }
+
+    const params: Record<string, number | undefined> = {};
 
     for (const param of row.params) {
       const paramDef = MethodParameters[param.f1];
@@ -85,9 +88,25 @@ export const conversionsGenerator = mappingGenerator<Row, string>({
         }
       }
 
-      method += ` +${paramDef}=${value}`;
+      params["+" + paramDef] = value;
     }
 
-    return method;
+    // Exceptions
+
+    // Polar Stereographic (variants B and C). If +lat_0 is not set, use North or South Pole by default.
+    // Infer the Pole's hemisphere by the sign of latitude of true scale.
+    // Since the projection covers only one hemisphere, this inference is correct.
+
+    if ((row.method === 9829 || row.method === 9830) && params["+lat_0"] === undefined) {
+      const latTs = params["+lat_ts"];
+
+      if (latTs === undefined) {
+        throw new Error("Cannot infer +lat_0 for Polar Stereographic: latitude of true scale is not set.");
+      }
+
+      params["+lat_0"] = Math.sign(latTs) * 90;
+    }
+
+    return method + " " + objToProj4(params);
   },
 });

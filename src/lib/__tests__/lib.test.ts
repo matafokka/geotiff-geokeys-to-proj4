@@ -187,6 +187,15 @@ const fixtures: Fixture[] = [
     extProj4:
       "+proj=merc +a=6378137 +b=6378137 +lat_ts=0 +lon_0=0 +x_0=0 +y_0=0 +k=1 +units=m +nadgrids=@null +wktext +no_defs",
   },
+  {
+    name: "From #8", // This single example should be enough for testing #8.
+    GTModelTypeGeoKey: 1,
+    ProjectedCSTypeGeoKey: 3031,
+    oldProj4:
+      "+proj=stere +lat_0=-90 +lon_0=0 +lat_ts=-71 +x_0=0 +y_0=0 +ellps=WGS84 +a=6378137 +b=6356752.314245179 +pm=0 +axis=en +no_defs",
+    // This is taken from epsg.io and verified manually
+    extProj4: "+proj=stere +lat_0=-90 +lat_ts=-71 +lon_0=0 +x_0=0 +y_0=0 +datum=WGS84 +units=m +no_defs +type=crs",
+  },
 ];
 
 describe("Geokeys", () => {
