@@ -59,6 +59,7 @@ interface UOM {
  * These CS have messed up description, but they're ok without transformation.
  */
 const TO_IGNORE_ORIENTATION: Record<string, true | undefined> = {
+  1025: true,
   1035: true,
   1036: true,
   1037: true,

@@ -32,6 +32,7 @@ export const Methods: Record<string, string | undefined> = {
   "9809": "+proj=sterea",
   "9810": "+proj=stere",
   "9829": "+proj=stere",
+  "9830": "+proj=stere",
   "9806": "+proj=cass",
   "9833": "+proj=cass +hyperbolic",
   "9840": "+proj=ortho",
