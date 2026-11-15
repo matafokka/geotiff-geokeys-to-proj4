@@ -11,11 +11,11 @@ export const PCSKeys: PCSKeysMappings = [
   {
     "ProjStdParallel1GeoKey": {
       "u": 1,
-      "p": "("
+      "p": "M"
     },
     "ProjStdParallel2GeoKey": {
       "u": 1,
-      "p": "M"
+      "p": "J"
     },
     "ProjCenterLongGeoKey": {
       "u": 1,
@@ -31,7 +31,7 @@ export const PCSKeys: PCSKeysMappings = [
     },
     "ProjCenterNorthingGeoKey": {
       "u": 2,
-      "p": "O"
+      "p": "("
     },
     "ProjScaleAtCenterGeoKey": {
       "u": 3,
@@ -53,7 +53,7 @@ export const PCSKeys: PCSKeysMappings = [
     },
     "ProjFalseOriginNorthingGeoKey": {
       "u": 2,
-      "p": "O"
+      "p": "("
     },
     "ProjScaleAtNatOriginGeoKey": {
       "u": 3,
@@ -61,7 +61,7 @@ export const PCSKeys: PCSKeysMappings = [
     },
     "ProjStdParallelGeoKey": {
       "u": 1,
-      "p": "("
+      "p": "M"
     }
   },
   {
@@ -79,7 +79,7 @@ export const PCSKeys: PCSKeysMappings = [
     },
     "ProjFalseNorthingGeoKey": {
       "u": 2,
-      "p": "O"
+      "p": "("
     },
     "ProjOriginLongGeoKey": {
       "u": 1,

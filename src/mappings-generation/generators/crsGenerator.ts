@@ -4,7 +4,6 @@ import { mappingGenerator } from "@/mappings-generation/generators/mappingGenera
 import type { WithEpsgId } from "@/mappings-generation/types/misc";
 import { parseCsName } from "@/mappings-generation/generators/utils/parseCsName";
 import { getCsUomInfo } from "@/mappings-generation/generators/utils/getCsUomInfo";
-import { parseFloatLoose } from "@/shared/utils/misc";
 import type { CRSObj } from "@/mappings-generation/types/CRSObj";
 import { objToProj4, proj4ToObj } from "@/shared/utils/proj4";
 import { datumsGenerator } from "@/mappings-generation/generators/datumsGenerator";
@@ -60,6 +59,7 @@ interface UOM {
  * These CS have messed up description, but they're ok without transformation.
  */
 const TO_IGNORE_ORIENTATION: Record<string, true | undefined> = {
+  1025: true,
   1035: true,
   1036: true,
   1037: true,
@@ -163,13 +163,6 @@ export const crsGenerator = mappingGenerator<Row, string | number | CRSObj>({
 
     for (const key in datumKeys) {
       conversionKeys[key] = datumKeys[key];
-    }
-
-    // Exceptions
-
-    if (row.cs_id === 4468) {
-      const value = parseFloatLoose(conversionKeys["+lat_0"]);
-      conversionKeys["+lat_0"] = value + 90 + ""; // Not sure if it must be added or replaced
     }
 
     // Merge keys into a string
