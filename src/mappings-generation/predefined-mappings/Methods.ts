@@ -32,7 +32,9 @@ export const Methods: Record<string, string | undefined> = {
   "9809": "+proj=sterea",
   "9810": "+proj=stere",
   "9829": "+proj=stere",
-  "9830": "+proj=stere",
+  // TODO: Support Variant C. This requires additional processing, see:
+  // https://github.com/matafokka/geotiff-geokeys-to-proj4/issues/8#issuecomment-6899405673
+  // "9830": "+proj=stere",
   "9806": "+proj=cass",
   "9833": "+proj=cass +hyperbolic",
   "9840": "+proj=ortho",
